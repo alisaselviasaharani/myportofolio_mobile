@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/screens/experience_list.dart';
 
 class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
@@ -8,8 +10,18 @@ class MyHomePage extends StatelessWidget {
   final String kelas = "PBP D";
 
   final List<ItemHomepage> items = [
-    ItemHomepage("Lihat Proyek", Icons.folder, Colors.blue),
-    ItemHomepage("Tambah Proyek", Icons.add_circle, Colors.green),
+    ItemHomepage(
+      "Lihat Experience",
+      Icons.work,
+      Colors.blue,
+      destination: (_) => const ExperienceListPage(),
+    ),
+    ItemHomepage(
+      "Tambah Experience",
+      Icons.add_circle,
+      Colors.green,
+      destination: (_) => const ExperienceFormPage(),
+    ),
     ItemHomepage("Logout", Icons.logout, Colors.red),
   ];
 
@@ -111,12 +123,15 @@ class InfoCard extends StatelessWidget {
 ///
 /// Warna disimpan langsung di model sehingga [ItemCard] cukup membaca
 /// `item.color` tanpa percabangan if-else per tombol.
+/// [destination] bersifat opsional: bila diisi, halaman tersebut dibuka
+/// setelah SnackBar ditampilkan.
 class ItemHomepage {
   final String name;
   final IconData icon;
   final Color color;
+  final WidgetBuilder? destination;
 
-  ItemHomepage(this.name, this.icon, this.color);
+  ItemHomepage(this.name, this.icon, this.color, {this.destination});
 }
 
 class ItemCard extends StatelessWidget {
@@ -141,6 +156,12 @@ class ItemCard extends StatelessWidget {
                 content: Text("Kamu telah menekan tombol ${item.name}!"),
               ),
             );
+
+          // Buka halaman tujuan (jika ada) setelah SnackBar ditampilkan.
+          final destination = item.destination;
+          if (destination != null) {
+            Navigator.of(context).push(MaterialPageRoute(builder: destination));
+          }
         },
         child: Container(
           padding: const EdgeInsets.all(8),
