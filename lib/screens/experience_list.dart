@@ -50,7 +50,7 @@ class ExperienceListPage extends StatelessWidget {
   }
 }
 
-/// Kartu yang menampilkan satu [Experience].
+/// Kartu yang menampilkan satu [Experience], lengkap dengan foto.
 class ExperienceCard extends StatelessWidget {
   final Experience experience;
 
@@ -60,32 +60,123 @@ class ExperienceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final category = experience.category;
     return Card(
-      elevation: 2.0,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              experience.title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      elevation: 3.0,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Foto kegiatan dengan label kategori di pojok kiri bawah.
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _ExperienceImage(experience),
+                Positioned(
+                  left: 12,
+                  bottom: 12,
+                  child: Chip(
+                    label: Text(
+                      category.label,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: category.color,
+                    side: BorderSide.none,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 4.0),
-            Text('${experience.institution} • ${experience.period}'),
-            const SizedBox(height: 8.0),
-            Chip(
-              label: Text(
-                category.label,
-                style: const TextStyle(color: Colors.white),
-              ),
-              backgroundColor: category.color,
-              side: BorderSide.none,
-              visualDensity: VisualDensity.compact,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  experience.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Row(
+                  children: [
+                    const Icon(Icons.business, size: 16, color: Colors.grey),
+                    const SizedBox(width: 6.0),
+                    Expanded(child: Text(experience.institution)),
+                  ],
+                ),
+                const SizedBox(height: 2.0),
+                Row(
+                  children: [
+                    const Icon(Icons.event, size: 16, color: Colors.grey),
+                    const SizedBox(width: 6.0),
+                    Text(experience.period),
+                  ],
+                ),
+                const SizedBox(height: 10.0),
+                Text(experience.description),
+              ],
             ),
-            const SizedBox(height: 8.0),
-            Text(experience.description),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Foto experience. Jika URL kosong atau gagal dimuat, tampilkan placeholder
+/// bergradasi warna kategori agar kartu tetap rapi.
+class _ExperienceImage extends StatelessWidget {
+  final Experience experience;
+
+  const _ExperienceImage(this.experience);
+
+  @override
+  Widget build(BuildContext context) {
+    final url = experience.imageUrl;
+    final placeholder = _Placeholder(color: experience.category.color);
+    if (url == null || url.isEmpty) return placeholder;
+
+    // Path "assets/..." dimuat dari file lokal, selain itu dianggap URL.
+    // Keduanya jatuh ke placeholder jika gagal dimuat.
+    if (url.startsWith('assets/')) {
+      return Image.asset(
+        url,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => placeholder,
+      );
+    }
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, progress) =>
+          progress == null ? child : placeholder,
+      errorBuilder: (_, _, _) => placeholder,
+    );
+  }
+}
+
+class _Placeholder extends StatelessWidget {
+  final Color color;
+
+  const _Placeholder({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color, Color.alphaBlend(Colors.black26, color)],
         ),
+      ),
+      child: const Center(
+        child: Icon(Icons.photo_camera_outlined, color: Colors.white70, size: 48),
       ),
     );
   }

@@ -28,6 +28,7 @@ class ExperienceRepository {
           'Assisted in coordinating IT Club activities and supporting '
           'members in learning and developing their technology skills.',
       category: ExperienceCategory.partTime,
+      imageUrl: 'assets/images/logoIT65.png',
     ),
     Experience(
       title: 'Active Participant - Young Health Program',
@@ -37,6 +38,7 @@ class ExperienceRepository {
           'Actively participated as a youth health cadre in health '
           'education and disease prevention campaigns.',
       category: ExperienceCategory.volunteer,
+      imageUrl: 'assets/images/logoYHP.jpeg',
     ),
     Experience(
       title: 'Math Club Chairperson',
@@ -46,6 +48,7 @@ class ExperienceRepository {
           'Led the Math Club and organized activities to help members '
           'improve their mathematics skills.',
       category: ExperienceCategory.partTime,
+      imageUrl: 'assets/images/logomts.png',
     ),
   ];
 }
