@@ -4,7 +4,7 @@
 // utility in the flutter_test package. For example, you can send tap and scroll
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/main.dart';
 
@@ -44,6 +44,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Experience'), findsOneWidget);
+    // Item pertama langsung terlihat.
+    expect(find.text('Vice Chairperson of IT Club 65'), findsOneWidget);
+
+    // Item terakhir ada di bawah layar, jadi scroll daftar dulu.
+    await tester.scrollUntilVisible(
+      find.text('Math Club Chairperson'),
+      200,
+      scrollable: find.descendant(
+        of: find.byType(ListView),
+        matching: find.byType(Scrollable),
+      ),
+    );
     expect(find.text('Math Club Chairperson'), findsOneWidget);
   });
 }
