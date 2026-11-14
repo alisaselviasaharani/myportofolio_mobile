@@ -40,7 +40,11 @@ class MyHomePage extends StatelessWidget {
         backgroundColor: primary,
       ),
       body: SingleChildScrollView(
-        child: Column(
+        // Batasi lebar agar tampilan tetap proporsional di layar lebar.
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
           children: [
             // Header bergradasi berisi pesan sambutan.
             Container(
@@ -138,6 +142,8 @@ class MyHomePage extends StatelessWidget {
               ),
             ),
           ],
+        ),
+          ),
         ),
       ),
     );
