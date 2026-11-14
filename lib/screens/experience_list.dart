@@ -27,11 +27,19 @@ class ExperienceListPage extends StatelessWidget {
           if (items.isEmpty) {
             return const Center(child: Text('Belum ada experience.'));
           }
-          return ListView.separated(
+          final list = ListView.separated(
             padding: const EdgeInsets.all(16.0),
             itemCount: items.length,
             separatorBuilder: (_, _) => const SizedBox(height: 12.0),
             itemBuilder: (context, index) => ExperienceCard(items[index]),
+          );
+          // Batasi lebar agar tidak melebar di layar desktop/tablet.
+          return Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: list,
+            ),
           );
         },
       ),
@@ -67,8 +75,8 @@ class ExperienceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Foto kegiatan dengan label kategori di pojok kiri bawah.
-          AspectRatio(
-            aspectRatio: 16 / 9,
+          SizedBox(
+            height: 180,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -144,10 +152,17 @@ class _ExperienceImage extends StatelessWidget {
     // Path "assets/..." dimuat dari file lokal, selain itu dianggap URL.
     // Keduanya jatuh ke placeholder jika gagal dimuat.
     if (url.startsWith('assets/')) {
-      return Image.asset(
-        url,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => placeholder,
+      // Aset (mis. logo) ditampilkan utuh di atas latar putih agar tidak terpotong.
+      return Container(
+        color: Colors.white,
+        padding: const EdgeInsets.all(12),
+        child: Image.asset(
+          url,
+          fit: BoxFit.contain,
+          // Dikecilkan saat decode supaya hemat memori untuk file besar.
+          cacheHeight: 400,
+          errorBuilder: (_, _, _) => placeholder,
+        ),
       );
     }
     return Image.network(
