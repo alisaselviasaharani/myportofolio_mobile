@@ -3,7 +3,6 @@ import 'package:myportofolio_mobile/data/experience_repository.dart';
 import 'package:myportofolio_mobile/models/experience.dart';
 
 /// Halaman form untuk menambah experience baru.
-///
 /// Berupa [StatefulWidget] karena menyimpan state form: controller teks
 /// dan kategori yang sedang dipilih.
 class ExperienceFormPage extends StatefulWidget {
