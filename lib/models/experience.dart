@@ -26,11 +26,15 @@ class Experience {
   final String description;
   final ExperienceCategory category;
 
+  /// URL foto kegiatan (opsional). Bila kosong/gagal dimuat, ditampilkan placeholder.
+  final String? imageUrl;
+
   const Experience({
     required this.title,
     required this.institution,
     required this.period,
     required this.description,
     required this.category,
+    this.imageUrl,
   });
 }

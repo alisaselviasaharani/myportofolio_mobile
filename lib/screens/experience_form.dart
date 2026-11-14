@@ -19,6 +19,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
   final _institutionController = TextEditingController();
   final _periodController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _imageUrlController = TextEditingController();
   ExperienceCategory _category = ExperienceCategory.fullTime;
 
   @override
@@ -27,6 +28,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
     _institutionController.dispose();
     _periodController.dispose();
     _descriptionController.dispose();
+    _imageUrlController.dispose();
     super.dispose();
   }
 
@@ -34,6 +36,18 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
   String? _required(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Wajib diisi';
+    }
+    return null;
+  }
+
+  /// Foto bersifat opsional, tetapi jika diisi harus berupa URL http(s).
+  String? _optionalUrl(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return null;
+    if (!text.startsWith('http://') &&
+        !text.startsWith('https://') &&
+        !text.startsWith('assets/')) {
+      return 'Harus diawali http(s):// atau assets/';
     }
     return null;
   }
@@ -48,6 +62,9 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
         period: _periodController.text.trim(),
         description: _descriptionController.text.trim(),
         category: _category,
+        imageUrl: _imageUrlController.text.trim().isEmpty
+            ? null
+            : _imageUrlController.text.trim(),
       ),
     );
 
@@ -128,6 +145,17 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                 border: OutlineInputBorder(),
               ),
               validator: _required,
+            ),
+            const SizedBox(height: 16.0),
+            TextFormField(
+              controller: _imageUrlController,
+              keyboardType: TextInputType.url,
+              decoration: const InputDecoration(
+                labelText: 'Foto: URL atau assets/images/... (opsional)',
+                prefixIcon: Icon(Icons.image_outlined),
+                border: OutlineInputBorder(),
+              ),
+              validator: _optionalUrl,
             ),
             const SizedBox(height: 24.0),
             FilledButton.icon(
