@@ -9,8 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/main.dart';
 
 void main() {
-  testWidgets('Halaman utama menampilkan identitas dan menu',
-      (WidgetTester tester) async {
+  testWidgets('Halaman utama menampilkan identitas dan menu', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
 
     expect(find.text('MyPortfolio'), findsOneWidget);
@@ -23,21 +24,20 @@ void main() {
     expect(find.text('Logout'), findsOneWidget);
   });
 
-  testWidgets('Tombol Logout menampilkan SnackBar',
-      (WidgetTester tester) async {
+  testWidgets('Tombol Logout menampilkan SnackBar', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
 
     await tester.tap(find.text('Logout'));
     await tester.pump();
 
-    expect(
-      find.text('Kamu telah menekan tombol Logout!'),
-      findsOneWidget,
-    );
+    expect(find.text('Kamu telah menekan tombol Logout!'), findsOneWidget);
   });
 
-  testWidgets('Tombol Lihat Experience membuka daftar',
-      (WidgetTester tester) async {
+  testWidgets('Tombol Lihat Experience membuka daftar', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
 
     await tester.tap(find.text('Lihat Experience'));
