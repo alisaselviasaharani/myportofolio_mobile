@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:myportofolio_mobile/screens/experience_form.dart';
-import 'package:myportofolio_mobile/screens/experience_list.dart';
 
+/// Halaman utama aplikasi MyPortfolio.
+///
+/// Berupa [StatelessWidget] karena tidak menyimpan state yang berubah.
+/// Isinya: header sambutan, tiga [InfoCard] identitas (NPM, Name, Class),
+/// dan tiga [ItemCard] aksi yang datanya diambil dari daftar [items].
 class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
 
+  // Identitas pemilik portofolio.
   final String npm = "2506618433";
   final String nama = "Alisa Selvia Saharani";
   final String kelas = "PBP D";
 
+  // Daftar tombol aksi. Warna tiap tombol didefinisikan di sini (satu sumber).
   final List<ItemHomepage> items = [
-    ItemHomepage(
-      "Lihat Experience",
-      Icons.work,
-      Colors.blue,
-      destination: (_) => const ExperienceListPage(),
-    ),
-    ItemHomepage(
-      "Tambah Experience",
-      Icons.add_circle,
-      Colors.green,
-      destination: (_) => const ExperienceFormPage(),
-    ),
+    ItemHomepage("Lihat Experience", Icons.work, Colors.blue),
+    ItemHomepage("Tambah Experience", Icons.add_circle, Colors.green),
     ItemHomepage("Logout", Icons.logout, Colors.red),
   ];
 
@@ -150,8 +145,10 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
+/// Kartu informasi yang menampilkan ikon, judul ([title]), dan isi ([content]).
+///
+/// Dipakai tiga kali di [MyHomePage] untuk NPM, Name, dan Class.
 class InfoCard extends StatelessWidget {
-  // Kartu informasi yang menampilkan ikon, judul (title), dan isi (content).
   final String title;
   final String content;
   final IconData icon;
@@ -205,17 +202,18 @@ class InfoCard extends StatelessWidget {
 ///
 /// Warna disimpan langsung di model sehingga [ItemCard] cukup membaca
 /// `item.color` tanpa percabangan if-else per tombol.
-/// [destination] bersifat opsional: bila diisi, halaman tersebut dibuka
-/// setelah SnackBar ditampilkan.
 class ItemHomepage {
   final String name;
   final IconData icon;
   final Color color;
-  final WidgetBuilder? destination;
 
-  ItemHomepage(this.name, this.icon, this.color, {this.destination});
+  ItemHomepage(this.name, this.icon, this.color);
 }
 
+/// Tombol aksi berbentuk kartu berwarna untuk satu [ItemHomepage].
+///
+/// Warna latar dibaca dari `item.color`, dan menekan kartu menampilkan
+/// SnackBar "Kamu telah menekan tombol [Nama Tombol]!".
 class ItemCard extends StatelessWidget {
   final ItemHomepage item;
 
@@ -241,12 +239,6 @@ class ItemCard extends StatelessWidget {
                 content: Text("Kamu telah menekan tombol ${item.name}!"),
               ),
             );
-
-          // Buka halaman tujuan (jika ada) setelah SnackBar ditampilkan.
-          final destination = item.destination;
-          if (destination != null) {
-            Navigator.of(context).push(MaterialPageRoute(builder: destination));
-          }
         },
         child: Container(
           padding: const EdgeInsets.all(8),

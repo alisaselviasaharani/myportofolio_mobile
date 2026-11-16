@@ -1,10 +1,3 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/main.dart';
 
@@ -24,38 +17,16 @@ void main() {
     expect(find.text('Logout'), findsOneWidget);
   });
 
-  testWidgets('Tombol Logout menampilkan SnackBar', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const MyApp());
+  for (final name in ['Lihat Experience', 'Tambah Experience', 'Logout']) {
+    testWidgets('Tombol $name menampilkan SnackBar', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(const MyApp());
 
-    await tester.tap(find.text('Logout'));
-    await tester.pump();
+      await tester.tap(find.text(name));
+      await tester.pump();
 
-    expect(find.text('Kamu telah menekan tombol Logout!'), findsOneWidget);
-  });
-
-  testWidgets('Tombol Lihat Experience membuka daftar', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const MyApp());
-
-    await tester.tap(find.text('Lihat Experience'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Experience'), findsOneWidget);
-    // Item pertama langsung terlihat.
-    expect(find.text('Vice Chairperson of IT Club 65'), findsOneWidget);
-
-    // Item terakhir ada di bawah layar, jadi scroll daftar dulu.
-    await tester.scrollUntilVisible(
-      find.text('Math Club Chairperson'),
-      200,
-      scrollable: find.descendant(
-        of: find.byType(ListView),
-        matching: find.byType(Scrollable),
-      ),
-    );
-    expect(find.text('Math Club Chairperson'), findsOneWidget);
-  });
+      expect(find.text('Kamu telah menekan tombol $name!'), findsOneWidget);
+    });
+  }
 }

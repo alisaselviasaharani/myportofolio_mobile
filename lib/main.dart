@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/menu.dart';
 
+/// Titik masuk aplikasi.
 void main() {
   runApp(const MyApp());
 }
 
+/// Widget root: membangun [MaterialApp] (tema + halaman awal [MyHomePage]).
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
