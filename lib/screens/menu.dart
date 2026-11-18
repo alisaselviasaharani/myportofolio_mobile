@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/widgets/left_drawer.dart';
+import 'package:myportofolio_mobile/widgets/experience_card.dart';
 
 /// Halaman utama aplikasi MyPortfolio.
 ///
@@ -33,7 +35,10 @@ class MyHomePage extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: primary,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+      // Drawer menu untuk navigasi antarhalaman.
+      drawer: const LeftDrawer(),
       body: SingleChildScrollView(
         // Batasi lebar agar tampilan tetap proporsional di layar lebar.
         child: Center(
@@ -208,60 +213,4 @@ class ItemHomepage {
   final Color color;
 
   ItemHomepage(this.name, this.icon, this.color);
-}
-
-/// Tombol aksi berbentuk kartu berwarna untuk satu [ItemHomepage].
-///
-/// Warna latar dibaca dari `item.color`, dan menekan kartu menampilkan
-/// SnackBar "Kamu telah menekan tombol [Nama Tombol]!".
-class ItemCard extends StatelessWidget {
-  final ItemHomepage item;
-
-  const ItemCard(this.item, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      clipBehavior: Clip.antiAlias,
-      elevation: 3,
-      shadowColor: item.color.withValues(alpha: 0.5),
-      // Warna latar diambil dari model, jadi tiap tombol punya warna sendiri.
-      color: item.color,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        // Aksi ketika kartu ditekan oleh pengguna.
-        onTap: () {
-          // Menampilkan SnackBar dengan pesan interaktif.
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text("Kamu telah menekan tombol ${item.name}!"),
-              ),
-            );
-        },
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(item.icon, color: Colors.white, size: 34.0),
-                const Padding(padding: EdgeInsets.all(3)),
-                Text(
-                  item.name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
