@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/experience_card.dart';
 
@@ -18,7 +19,12 @@ class MyHomePage extends StatelessWidget {
   // Daftar tombol aksi. Warna tiap tombol didefinisikan di sini (satu sumber).
   final List<ItemHomepage> items = [
     ItemHomepage("Lihat Experience", Icons.work, Colors.blue),
-    ItemHomepage("Tambah Experience", Icons.add_circle, Colors.green),
+    ItemHomepage(
+      "Tambah Experience",
+      Icons.add_circle,
+      Colors.green,
+      pageBuilder: (context) => const ExperienceFormPage(),
+    ),
     ItemHomepage("Logout", Icons.logout, Colors.red),
   ];
 
@@ -206,11 +212,16 @@ class InfoCard extends StatelessWidget {
 /// Model data untuk satu tombol aksi pada halaman utama.
 ///
 /// Warna disimpan langsung di model sehingga [ItemCard] cukup membaca
-/// `item.color` tanpa percabangan if-else per tombol.
+/// `item.color` tanpa percabangan if-else per tombol. Halaman tujuan juga
+/// disimpan di model lewat [pageBuilder], sehingga menambah kartu baru cukup
+/// dengan mendaftarkannya di daftar `items` tanpa mengubah [ItemCard].
 class ItemHomepage {
   final String name;
   final IconData icon;
   final Color color;
 
-  ItemHomepage(this.name, this.icon, this.color);
+  /// Pembuat halaman tujuan. `null` berarti kartu hanya menampilkan SnackBar.
+  final WidgetBuilder? pageBuilder;
+
+  ItemHomepage(this.name, this.icon, this.color, {this.pageBuilder});
 }
