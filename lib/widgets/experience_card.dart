@@ -1,11 +1,11 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 
 /// Tombol aksi berbentuk kartu berwarna untuk satu [ItemHomepage].
 ///
-/// Warna latar dibaca dari `item.color`, dan menekan kartu menampilkan
-/// SnackBar "Kamu telah menekan tombol [Nama Tombol]!".
+/// Warna latar dibaca dari `item.color`. Menekan kartu menampilkan SnackBar
+/// "Kamu telah menekan tombol [Nama Tombol]!", lalu membuka halaman tujuan
+/// (`item.pageBuilder`) dengan `Navigator.push()` jika item punya tujuan.
 class ItemCard extends StatelessWidget {
   final ItemHomepage item;
 
@@ -31,13 +31,12 @@ class ItemCard extends StatelessWidget {
                 content: Text("Kamu telah menekan tombol ${item.name}!"),
               ),
             );
-          // Navigate ke halaman yang sesuai.
-          if (item.name == "Tambah Experience") {
+          // Navigate ke halaman tujuan milik item (jika ada).
+          final pageBuilder = item.pageBuilder;
+          if (pageBuilder != null) {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const ExperienceFormPage(),
-              ),
+              MaterialPageRoute(builder: pageBuilder),
             );
           }
         },
