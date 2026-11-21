@@ -93,10 +93,73 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
     });
   }
 
-  /// Dipanggil tombol Simpan: menjalankan validasi seluruh field.
-  /// Dialog ringkasan ditambahkan pada commit berikutnya.
+  /// Dipanggil tombol Simpan: validasi dulu, dialog hanya jika semua valid.
   void _submit() {
-    _formKey.currentState!.validate();
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    final achievement = Achievement(
+      title: _titleController.text.trim(),
+      period: formatPeriod(_startDate!, _endDate),
+      description: _descriptionController.text.trim(),
+      category: _category,
+      imageUrl: _imageUrlController.text.trim(),
+    );
+    _showSummaryDialog(achievement);
+  }
+
+  void _showSummaryDialog(Achievement achievement) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Achievement berhasil ditambahkan!'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SummaryRow(label: 'Nama Penghargaan', value: achievement.title),
+                _SummaryRow(label: 'Periode', value: achievement.period),
+                _SummaryRow(
+                  label: 'Kategori',
+                  value: achievement.category.label,
+                ),
+                _SummaryRow(
+                  label: 'Deskripsi',
+                  value: achievement.description,
+                ),
+                _SummaryRow(
+                  label: 'URL Gambar',
+                  value: achievement.imageUrl,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _resetForm();
+              },
+              child: const Text('Tutup'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Mengembalikan form dan semua state ke kondisi awal.
+  void _resetForm() {
+    _formKey.currentState!.reset();
+    setState(() {
+      _category = _defaultCategory;
+      _startDate = null;
+      _endDate = null;
+      _startDateController.clear();
+      _endDateController.clear();
+    });
   }
 
   @override
@@ -283,6 +346,36 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Satu baris ringkasan pada dialog: label tebal di atas, nilai di bawahnya.
+/// Nilai kosong ditampilkan sebagai tanda "-".
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(value.isEmpty ? '-' : value),
+        ],
       ),
     );
   }
