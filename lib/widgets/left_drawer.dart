@@ -4,6 +4,7 @@ import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/utils/snackbar.dart';
 
 /// Tujuan pada drawer; dipakai untuk menandai item yang sedang aktif.
 enum DrawerDestination { home, experience, education, achievement }
@@ -23,6 +24,12 @@ class LeftDrawer extends StatelessWidget {
       context,
       MaterialPageRoute(builder: (context) => page),
     );
+  }
+
+  /// Menu yang halamannya belum dibuat: tutup drawer lalu tampilkan info.
+  void _comingSoon(BuildContext context, String label) {
+    showInfoSnackBar(context, '$label akan hadir di tahap berikutnya.');
+    Navigator.pop(context);
   }
 
   @override
@@ -52,9 +59,9 @@ class LeftDrawer extends StatelessWidget {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'My Portfolio',
+                  'Alisa Selvia Saharani',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -91,6 +98,28 @@ class LeftDrawer extends StatelessWidget {
             title: 'Add Achievement',
             selected: selected == DrawerDestination.achievement,
             onTap: () => _go(context, const AchievementFormPage()),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Divider(),
+          ),
+          _DrawerTile(
+            icon: Icons.person_outline,
+            title: 'About Me',
+            selected: false,
+            onTap: () => _comingSoon(context, 'About Me'),
+          ),
+          _DrawerTile(
+            icon: Icons.settings_outlined,
+            title: 'Settings',
+            selected: false,
+            onTap: () => _comingSoon(context, 'Settings'),
+          ),
+          _DrawerTile(
+            icon: Icons.logout,
+            title: 'Logout',
+            selected: false,
+            onTap: () => _comingSoon(context, 'Logout'),
           ),
         ],
       ),
