@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
+import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
@@ -78,6 +79,12 @@ class LeftDrawer extends StatelessWidget {
             title: 'Add Experience',
             selected: selected == DrawerDestination.experience,
             onTap: () => _go(context, const ExperienceFormPage()),
+          ),
+          _DrawerTile(
+            icon: Icons.school_outlined,
+            title: 'Add Education',
+            selected: selected == DrawerDestination.education,
+            onTap: () => _go(context, const EducationFormPage()),
           ),
           _DrawerTile(
             icon: Icons.emoji_events_outlined,
