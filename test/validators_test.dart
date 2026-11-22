@@ -118,4 +118,18 @@ void main() {
       expect(FormValidators.dateOrder(start, DateTime(2027, 1, 1)), isNull);
     });
   });
+
+  group('requiredEmail', () {
+    test('menolak kosong dan format salah', () {
+      expect(FormValidators.requiredEmail(''), 'Email tidak boleh kosong!');
+      expect(
+        FormValidators.requiredEmail('bukan-email'),
+        'Format email tidak valid!',
+      );
+    });
+
+    test('menerima email valid', () {
+      expect(FormValidators.requiredEmail('alisa@ui.ac.id'), isNull);
+    });
+  });
 }

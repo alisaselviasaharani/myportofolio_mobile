@@ -3,8 +3,10 @@ import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/achievement.dart';
 import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
+import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/screens/skills_page.dart';
 
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
@@ -44,6 +46,20 @@ class MyHomePage extends StatelessWidget {
       OceanColors.cardPink,
       iconColor: const Color(0xFF9A3FC4),
       pageBuilder: (context) => const AchievementFormPage(),
+    ),
+    ItemHomepage(
+      'My Skills',
+      Icons.psychology,
+      OceanColors.cardLavender,
+      iconColor: const Color(0xFF6C4FD8),
+      pageBuilder: (context) => const SkillsPage(),
+    ),
+    ItemHomepage(
+      'Contact Me',
+      Icons.contact_mail,
+      OceanColors.cardYellow,
+      iconColor: const Color(0xFF3F3DA8),
+      pageBuilder: (context) => const ContactPage(),
     ),
   ];
 

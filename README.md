@@ -211,8 +211,8 @@ Alur dan struktur:
 **Pengujian manual** (berlaku untuk form Education dan Achievement): buka form dari kartu dan dari drawer; kosongkan input wajib lalu tekan Simpan (pesan error muncul pada kolom terkait); isi nama dengan spasi saja (ditolak); isi URL `www.google.com` (ditolak); lengkapi isian lalu Simpan (dialog menampilkan data); tekan Tutup (form kosong kembali); buka drawer lalu Home (kembali ke halaman utama); ulangi di lebar layar ponsel.
 
 **Hasil pengujian:**
-- `flutter analyze` → **No issues found!** (ran in 9.6s).
-- `flutter test` → **All tests passed!** (43 tests passed).
+- `flutter analyze` → **No issues found!** (ran in 8.4s).
+- `flutter test` → **All tests passed!** (54 tests passed).
 
 **Pertanyaan Reflektif**
 

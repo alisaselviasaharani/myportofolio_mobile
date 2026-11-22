@@ -4,9 +4,11 @@ import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/main.dart';
 import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
+import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/screens/skills_page.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 
 /// Kartu aksi di beranda beserta halaman tujuannya.
@@ -14,6 +16,8 @@ const List<(String, Type)> _cards = [
   ('Add Education', EducationFormPage),
   ('Add Experience', ExperienceFormPage),
   ('Add Certification', AchievementFormPage),
+  ('My Skills', SkillsPage),
+  ('Contact Me', ContactPage),
 ];
 
 /// Layar tinggi agar semua kartu dan tile drawer terlihat tanpa menggulir.
@@ -127,6 +131,71 @@ void main() {
     expect(find.text('Education'), findsOneWidget);
     expect(find.text('1 item'), findsOneWidget);
     expect(find.text('0 items'), findsNWidgets(2));
+  });
+
+  group('Halaman Skills dan Contact', () {
+    testWidgets('Skills menampilkan tiga bagian kemampuan', (tester) async {
+      _useTallScreen(tester);
+      await tester.pumpWidget(const MaterialApp(home: SkillsPage()));
+
+      for (final text in [
+        'My Skills',
+        'Technical Skills',
+        'Soft Skills',
+        'Tools & Others',
+        'Flutter',
+        'Teamwork',
+        'GitHub',
+      ]) {
+        expect(find.text(text), findsOneWidget);
+      }
+    });
+
+    testWidgets('Contact menolak form kosong dan email tidak valid', (
+      tester,
+    ) async {
+      _useTallScreen(tester);
+      await tester.pumpWidget(const MaterialApp(home: ContactPage()));
+
+      await tester.ensureVisible(find.text('Kirim Pesan'));
+      await tester.tap(find.text('Kirim Pesan'));
+      await tester.pump();
+      expect(find.text('Nama lengkap tidak boleh kosong!'), findsOneWidget);
+      expect(find.text('Email tidak boleh kosong!'), findsOneWidget);
+      expect(find.text('Pesan tidak boleh kosong!'), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('contactEmailField')),
+        'bukan-email',
+      );
+      await tester.pump();
+      expect(find.text('Format email tidak valid!'), findsOneWidget);
+    });
+
+    testWidgets('Contact mengirim pesan jika semua isian valid', (
+      tester,
+    ) async {
+      _useTallScreen(tester);
+      await tester.pumpWidget(const MaterialApp(home: ContactPage()));
+
+      await tester.enterText(
+        find.byKey(const Key('contactNameField')),
+        'Alisa',
+      );
+      await tester.enterText(
+        find.byKey(const Key('contactEmailField')),
+        'alisa@ui.ac.id',
+      );
+      await tester.enterText(
+        find.byKey(const Key('contactMessageField')),
+        'Halo!',
+      );
+      await tester.ensureVisible(find.text('Kirim Pesan'));
+      await tester.tap(find.text('Kirim Pesan'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Message Sent!'), findsOneWidget);
+    });
   });
 
   group('OceanBottomBar', () {

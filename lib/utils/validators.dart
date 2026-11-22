@@ -48,6 +48,22 @@ class FormValidators {
     return null;
   }
 
+  /// Email wajib: tidak boleh kosong dan harus berformat `nama@domain.tld`.
+  static String? requiredEmail(String? value, {int maxLength = 254}) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return 'Email tidak boleh kosong!';
+    }
+    if (text.length > maxLength) {
+      return 'Email maksimal $maxLength karakter!';
+    }
+    final isValid = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(text);
+    if (!isValid) {
+      return 'Format email tidak valid!';
+    }
+    return null;
+  }
+
   /// Tanggal wajib dipilih.
   static String? requiredDate(DateTime? date, {required String fieldName}) {
     if (date == null) {

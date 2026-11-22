@@ -1,15 +1,25 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
+import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/screens/skills_page.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/widgets/illustrations.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 
 /// Tujuan pada drawer; dipakai untuk menandai item yang sedang aktif.
-enum DrawerDestination { home, project, education, experience, certification }
+enum DrawerDestination {
+  home,
+  project,
+  education,
+  experience,
+  certification,
+  skills,
+  contact,
+}
 
 /// Drawer navigasi yang dipakai bersama oleh semua halaman.
 ///
@@ -71,6 +81,18 @@ class LeftDrawer extends StatelessWidget {
                   title: 'Add Certification',
                   selected: selected == DrawerDestination.certification,
                   onTap: () => _go(context, const AchievementFormPage()),
+                ),
+                _DrawerTile(
+                  icon: Icons.psychology_outlined,
+                  title: 'My Skills',
+                  selected: selected == DrawerDestination.skills,
+                  onTap: () => _go(context, const SkillsPage()),
+                ),
+                _DrawerTile(
+                  icon: Icons.contact_mail_outlined,
+                  title: 'Contact Me',
+                  selected: selected == DrawerDestination.contact,
+                  onTap: () => _go(context, const ContactPage()),
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
