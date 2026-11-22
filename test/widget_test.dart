@@ -1,13 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/main.dart';
+import 'package:myportofolio_mobile/models/education.dart';
 
 const _cardNames = [
-  'Lihat Experience',
   'Tambah Experience',
   'Tambah Education',
   'Tambah Achievement',
-  'Logout',
+  'Lihat Experience',
 ];
 
 /// Membuka drawer lewat tombol hamburger pada AppBar.
@@ -17,6 +18,8 @@ Future<void> _openDrawer(WidgetTester tester) async {
 }
 
 void main() {
+  setUp(() => PortfolioStore.instance.clear());
+
   testWidgets('Halaman utama menampilkan identitas dan menu', (
     WidgetTester tester,
   ) async {
@@ -97,5 +100,51 @@ void main() {
     await tester.tap(find.text('Add Education'));
     await tester.pumpAndSettle();
     expect(find.text('Add Education Form'), findsOneWidget);
+  });
+
+  testWidgets('Bagian My Portfolio menampilkan jumlah item dari store', (
+    WidgetTester tester,
+  ) async {
+    PortfolioStore.instance.addEducation(
+      Education(
+        institution: 'Universitas Indonesia',
+        degree: 'S1 - Ilmu Komputer',
+        startDate: DateTime(2023, 9, 1),
+        endDate: DateTime(2027, 6, 1),
+        period: '1 Sep 2023 - 1 Jun 2027',
+      ),
+    );
+    await tester.pumpWidget(const MyApp());
+
+    await tester.ensureVisible(find.text('Education'));
+    expect(find.text('1 item'), findsOneWidget);
+    expect(find.text('0 items'), findsNWidgets(2));
+  });
+
+  testWidgets('Tombol tambah di bottom bar membuka lembar pilihan form', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.tap(find.byTooltip('Tambah'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add Education'));
+    await tester.pumpAndSettle();
+    expect(find.text('Add Education Form'), findsOneWidget);
+  });
+
+  testWidgets('Tombol Beranda di bottom bar kembali ke halaman utama', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MyApp());
+
+    await _openDrawer(tester);
+    await tester.tap(find.text('Add Education'));
+    await tester.pumpAndSettle();
+    expect(find.text('Add Education Form'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Beranda'));
+    await tester.pumpAndSettle();
+    expect(find.text('Selamat datang di MyPortfolio Mobile!'), findsOneWidget);
   });
 }
