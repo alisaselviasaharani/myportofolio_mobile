@@ -19,7 +19,7 @@ class ItemCard extends StatelessWidget {
       shadowColor: item.color.withValues(alpha: 0.5),
       // Warna latar diambil dari model, jadi tiap tombol punya warna sendiri.
       color: item.color,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
         // Aksi ketika kartu ditekan oleh pengguna.
         onTap: () {
@@ -46,8 +46,16 @@ class ItemCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(item.icon, color: Colors.white, size: 34.0),
-                const Padding(padding: EdgeInsets.all(3)),
+                // Lingkaran translusen di belakang ikon.
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.22),
+                  ),
+                  child: Icon(item.icon, color: Colors.white, size: 28.0),
+                ),
+                const SizedBox(height: 6),
                 Text(
                   item.name,
                   textAlign: TextAlign.center,

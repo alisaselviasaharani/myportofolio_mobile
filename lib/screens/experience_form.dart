@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
+import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 
 class ExperienceFormPage extends StatefulWidget {
   const ExperienceFormPage({super.key});
@@ -28,18 +30,11 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Center(
-          child: Text(
-            'Add Experience Form',
-          ),
-        ),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
-      ),
+      appBar: oceanAppBar(title: 'Add Experience Form'),
       // Drawer yang sama dengan halaman utama
-      drawer: const LeftDrawer(),
-      body: Form(
+      drawer: const LeftDrawer(selected: DrawerDestination.experience),
+      body: OceanBackground(
+        child: Form(
         key: _formKey,
         child: SingleChildScrollView(
           child: Column(
@@ -49,13 +44,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
-                  decoration: InputDecoration(
-                    hintText: "Posisi / Jabatan",
-                    labelText: "Posisi / Jabatan",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  ),
+                  decoration: oceanInputDecoration(label: "Posisi / Jabatan", hint: "Posisi / Jabatan"),
                   onChanged: (String? value) {
                     setState(() {
                       _position = value!;
@@ -73,13 +62,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
-                  decoration: InputDecoration(
-                    hintText: "Nama Perusahaan / Organisasi",
-                    labelText: "Perusahaan / Organisasi",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  ),
+                  decoration: oceanInputDecoration(label: "Perusahaan / Organisasi", hint: "Nama Perusahaan / Organisasi"),
                   onChanged: (String? value) {
                     setState(() {
                       _company = value!;
@@ -98,13 +81,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
                   maxLines: 5,
-                  decoration: InputDecoration(
-                    hintText: "Deskripsi Experience",
-                    labelText: "Deskripsi Experience",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  ),
+                  decoration: oceanInputDecoration(label: "Deskripsi Experience", hint: "Deskripsi Experience"),
                   onChanged: (String? value) {
                     setState(() {
                       _description = value!;
@@ -122,12 +99,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: "Tipe Experience",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  ),
+                  decoration: oceanInputDecoration(label: "Tipe Experience"),
                   initialValue: _type,
                   items: _types
                       .map((type) => DropdownMenuItem(
@@ -146,13 +118,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
-                  decoration: InputDecoration(
-                    hintText: "Contoh: Jan 2025 - Des 2025",
-                    labelText: "Periode",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  ),
+                  decoration: oceanInputDecoration(label: "Periode", hint: "Contoh: Jan 2025 - Des 2025"),
                   onChanged: (String? value) {
                     setState(() {
                       _period = value!;
@@ -164,13 +130,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
-                  decoration: InputDecoration(
-                    hintText: "URL Experience (opsional)",
-                    labelText: "Tautan Experience",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  ),
+                  decoration: oceanInputDecoration(label: "Tautan Experience", hint: "URL Experience (opsional)"),
                   onChanged: (String? value) {
                     setState(() {
                       _link = value!;
@@ -186,7 +146,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                   child: ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor:
-                          WidgetStateProperty.all(Colors.indigo),
+                          WidgetStateProperty.all(OceanColors.deep),
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
@@ -243,6 +203,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

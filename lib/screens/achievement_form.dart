@@ -1,14 +1,20 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/models/achievement.dart';
+import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
+import 'package:myportofolio_mobile/widgets/date_form_field.dart';
+import 'package:myportofolio_mobile/widgets/form_header.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
+import 'package:myportofolio_mobile/widgets/ocean_background.dart';
+import 'package:myportofolio_mobile/widgets/ocean_button.dart';
+import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
 
 /// Halaman formulir untuk menambah achievement (penghargaan/sertifikasi).
 ///
 /// Field mengikuti model Django `Achievements`: nama, periode, deskripsi,
 /// kategori, dan URL gambar. Setelah semua input lolos validasi, ringkasan
-/// isian ditampilkan dalam [AlertDialog].
+/// isian ditampilkan lewat [showSummaryDialog].
 class AchievementFormPage extends StatefulWidget {
   const AchievementFormPage({super.key});
 
@@ -47,29 +53,11 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
     super.dispose();
   }
 
-  /// Dekorasi input yang seragam untuk semua field.
-  InputDecoration _decoration({
-    required String label,
-    String? hint,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      suffixIcon: suffixIcon,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
-    );
-  }
-
-  /// Membuka `showDatePicker` lalu menyimpan tanggal terpilih.
+  /// Membuka date picker lalu menyimpan tanggal terpilih.
   Future<void> _pickDate({required bool isStart}) async {
-    final now = DateTime.now();
-    final initial = (isStart ? _startDate : (_endDate ?? _startDate)) ?? now;
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: DateTime(1990),
-      lastDate: DateTime(now.year + 10),
+    final picked = await pickDate(
+      context,
+      initial: isStart ? _startDate : (_endDate ?? _startDate),
       helpText: isStart ? 'Pilih tanggal mulai' : 'Pilih tanggal selesai',
     );
     if (picked == null || !mounted) {
@@ -105,48 +93,39 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
       category: _category,
       imageUrl: _imageUrlController.text.trim(),
     );
-    _showSummaryDialog(achievement);
-  }
-
-  void _showSummaryDialog(Achievement achievement) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Achievement berhasil ditambahkan!'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SummaryRow(label: 'Nama Penghargaan', value: achievement.title),
-                _SummaryRow(label: 'Periode', value: achievement.period),
-                _SummaryRow(
-                  label: 'Kategori',
-                  value: achievement.category.label,
-                ),
-                _SummaryRow(
-                  label: 'Deskripsi',
-                  value: achievement.description,
-                ),
-                _SummaryRow(
-                  label: 'URL Gambar',
-                  value: achievement.imageUrl,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                _resetForm();
-              },
-              child: const Text('Tutup'),
-            ),
-          ],
-        );
-      },
+    showSummaryDialog(
+      context,
+      title: 'Achievement berhasil ditambahkan!',
+      emoji: '🏆',
+      closeLabel: 'Tutup',
+      items: [
+        SummaryItem(
+          label: 'Nama Penghargaan',
+          value: achievement.title,
+          icon: Icons.emoji_events_outlined,
+        ),
+        SummaryItem(
+          label: 'Periode',
+          value: achievement.period,
+          icon: Icons.calendar_today_outlined,
+        ),
+        SummaryItem(
+          label: 'Kategori',
+          value: achievement.category.label,
+          icon: Icons.category_outlined,
+        ),
+        SummaryItem(
+          label: 'Deskripsi',
+          value: achievement.description,
+          icon: Icons.notes_outlined,
+        ),
+        SummaryItem(
+          label: 'URL Gambar',
+          value: achievement.imageUrl,
+          icon: Icons.image_outlined,
+        ),
+      ],
+      onClosed: _resetForm,
     );
   }
 
@@ -164,218 +143,173 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Achievement Form'),
-        centerTitle: true,
-        backgroundColor: primary,
-        foregroundColor: Colors.white,
-      ),
+      appBar: oceanAppBar(title: 'Add Achievement Form'),
       // Drawer yang sama dengan halaman utama.
-      drawer: const LeftDrawer(),
-      body: Form(
-        key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: SingleChildScrollView(
-          // Papan ketik ditutup saat form digulir.
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // === Nama Penghargaan ===
-                  Padding(
-                    padding: _fieldPadding,
-                    child: TextFormField(
-                      key: const Key('titleField'),
-                      controller: _titleController,
-                      maxLength: _titleMaxLength,
-                      textInputAction: TextInputAction.next,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: _decoration(
-                        label: 'Nama Penghargaan',
-                        hint: 'Contoh: Juara 1 Hackathon Nasional',
-                      ),
-                      validator: (value) => FormValidators.requiredText(
-                        value,
-                        fieldName: 'Nama penghargaan',
-                        maxLength: _titleMaxLength,
-                      ),
+      drawer: const LeftDrawer(selected: DrawerDestination.achievement),
+      body: OceanBackground(
+        child: Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: SingleChildScrollView(
+            // Papan ketik ditutup saat form digulir.
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const FormHeader(
+                      emoji: '🏆',
+                      title: 'Add Achievement',
+                      subtitle: 'Fill in your achievement details below.',
                     ),
-                  ),
-                  // === Deskripsi ===
-                  Padding(
-                    padding: _fieldPadding,
-                    child: TextFormField(
-                      key: const Key('descriptionField'),
-                      controller: _descriptionController,
-                      minLines: 3,
-                      maxLines: 5,
-                      maxLength: _descriptionMaxLength,
-                      keyboardType: TextInputType.multiline,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: _decoration(
-                        label: 'Deskripsi Penghargaan',
-                        hint: 'Ceritakan penghargaanmu',
-                      ),
-                      validator: (value) => FormValidators.requiredText(
-                        value,
-                        fieldName: 'Deskripsi penghargaan',
-                        maxLength: _descriptionMaxLength,
-                      ),
-                    ),
-                  ),
-                  // === Kategori ===
-                  Padding(
-                    padding: _fieldPadding,
-                    child: DropdownButtonFormField<AchievementCategory>(
-                      key: const Key('categoryField'),
-                      decoration: _decoration(label: 'Kategori Penghargaan'),
-                      // Nilai awal konstan agar reset() kembali ke default.
-                      initialValue: _defaultCategory,
-                      items: AchievementCategory.values
-                          .map(
-                            (category) => DropdownMenuItem(
-                              value: category,
-                              child: Text(category.label),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() => _category = value);
-                        }
-                      },
-                    ),
-                  ),
-                  // === Tanggal Mulai ===
-                  Padding(
-                    padding: _fieldPadding,
-                    child: TextFormField(
-                      key: const Key('startDateField'),
-                      controller: _startDateController,
-                      readOnly: true,
-                      onTap: () => _pickDate(isStart: true),
-                      decoration: _decoration(
-                        label: 'Tanggal Mulai',
-                        hint: 'Pilih tanggal',
-                        suffixIcon: const Icon(Icons.calendar_today),
-                      ),
-                      validator: (_) => FormValidators.requiredDate(
-                        _startDate,
-                        fieldName: 'Tanggal mulai',
-                      ),
-                    ),
-                  ),
-                  // === Tanggal Selesai (opsional) ===
-                  Padding(
-                    padding: _fieldPadding,
-                    child: TextFormField(
-                      key: const Key('endDateField'),
-                      controller: _endDateController,
-                      readOnly: true,
-                      onTap: () => _pickDate(isStart: false),
-                      decoration: _decoration(
-                        label: 'Tanggal Selesai (opsional)',
-                        hint: 'Pilih tanggal',
-                        suffixIcon: _endDate == null
-                            ? const Icon(Icons.calendar_today)
-                            : IconButton(
-                                tooltip: 'Hapus tanggal selesai',
-                                icon: const Icon(Icons.clear),
-                                onPressed: _clearEndDate,
-                              ),
-                      ),
-                      validator: (_) =>
-                          FormValidators.dateOrder(_startDate, _endDate),
-                    ),
-                  ),
-                  // Pratinjau periode yang akan disimpan.
-                  if (_startDate != null)
+                    // === Nama Penghargaan ===
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                      child: Text(
-                        'Periode: ${formatPeriod(_startDate!, _endDate)}',
-                        style: TextStyle(
-                          color: primary,
-                          fontWeight: FontWeight.w600,
+                      padding: _fieldPadding,
+                      child: TextFormField(
+                        key: const Key('titleField'),
+                        controller: _titleController,
+                        maxLength: _titleMaxLength,
+                        textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: oceanInputDecoration(
+                          label: 'Nama Penghargaan',
+                          hint: 'Contoh: Juara 1 Hackathon Nasional',
+                          prefixIcon: const Icon(Icons.emoji_events_outlined),
+                        ),
+                        validator: (value) => FormValidators.requiredText(
+                          value,
+                          fieldName: 'Nama penghargaan',
+                          maxLength: _titleMaxLength,
                         ),
                       ),
                     ),
-                  // === URL Gambar (opsional) ===
-                  Padding(
-                    padding: _fieldPadding,
-                    child: TextFormField(
-                      key: const Key('imageUrlField'),
-                      controller: _imageUrlController,
-                      maxLength: _imageUrlMaxLength,
-                      keyboardType: TextInputType.url,
-                      textInputAction: TextInputAction.done,
-                      decoration: _decoration(
-                        label: 'URL Gambar Penghargaan (opsional)',
-                        hint: 'https://contoh.com/gambar.png',
+                    // === Deskripsi ===
+                    Padding(
+                      padding: _fieldPadding,
+                      child: TextFormField(
+                        key: const Key('descriptionField'),
+                        controller: _descriptionController,
+                        minLines: 3,
+                        maxLines: 5,
+                        maxLength: _descriptionMaxLength,
+                        keyboardType: TextInputType.multiline,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: oceanInputDecoration(
+                          label: 'Deskripsi Penghargaan',
+                          hint: 'Ceritakan penghargaanmu',
+                        ),
+                        validator: (value) => FormValidators.requiredText(
+                          value,
+                          fieldName: 'Deskripsi penghargaan',
+                          maxLength: _descriptionMaxLength,
+                        ),
                       ),
-                      validator: (value) => FormValidators.optionalUrl(
-                        value,
-                        fieldName: 'URL gambar',
+                    ),
+                    // === Kategori ===
+                    Padding(
+                      padding: _fieldPadding,
+                      child: DropdownButtonFormField<AchievementCategory>(
+                        key: const Key('categoryField'),
+                        decoration: oceanInputDecoration(
+                          label: 'Kategori Penghargaan',
+                          prefixIcon: const Icon(Icons.category_outlined),
+                        ),
+                        // Nilai awal konstan agar reset() kembali ke default.
+                        initialValue: _defaultCategory,
+                        items: AchievementCategory.values
+                            .map(
+                              (category) => DropdownMenuItem(
+                                value: category,
+                                child: Text(category.label),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _category = value);
+                          }
+                        },
+                      ),
+                    ),
+                    // === Tanggal Mulai ===
+                    Padding(
+                      padding: _fieldPadding,
+                      child: DateFormField(
+                        key: const Key('startDateField'),
+                        controller: _startDateController,
+                        label: 'Tanggal Mulai',
+                        onTap: () => _pickDate(isStart: true),
+                        validator: (_) => FormValidators.requiredDate(
+                          _startDate,
+                          fieldName: 'Tanggal mulai',
+                        ),
+                      ),
+                    ),
+                    // === Tanggal Selesai (opsional) ===
+                    Padding(
+                      padding: _fieldPadding,
+                      child: DateFormField(
+                        key: const Key('endDateField'),
+                        controller: _endDateController,
+                        label: 'Tanggal Selesai (opsional)',
+                        onTap: () => _pickDate(isStart: false),
+                        onClear: _endDate == null ? null : _clearEndDate,
+                        clearTooltip: 'Hapus tanggal selesai',
+                        validator: (_) =>
+                            FormValidators.dateOrder(_startDate, _endDate),
+                      ),
+                    ),
+                    // Pratinjau periode yang akan disimpan.
+                    if (_startDate != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                        child: Text(
+                          'Periode: ${formatPeriod(_startDate!, _endDate)}',
+                          style: const TextStyle(
+                            color: OceanColors.deep,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    // === URL Gambar (opsional) ===
+                    Padding(
+                      padding: _fieldPadding,
+                      child: TextFormField(
+                        key: const Key('imageUrlField'),
+                        controller: _imageUrlController,
                         maxLength: _imageUrlMaxLength,
-                      ),
-                    ),
-                  ),
-                  // === Tombol Simpan ===
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primary,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size.fromHeight(48),
+                        keyboardType: TextInputType.url,
+                        textInputAction: TextInputAction.done,
+                        decoration: oceanInputDecoration(
+                          label: 'URL Gambar Penghargaan (opsional)',
+                          hint: 'https://contoh.com/gambar.png',
+                          prefixIcon: const Icon(Icons.link),
                         ),
-                        onPressed: _submit,
-                        child: const Text('Simpan'),
+                        validator: (value) => FormValidators.optionalUrl(
+                          value,
+                          fieldName: 'URL gambar',
+                          maxLength: _imageUrlMaxLength,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    // === Tombol Simpan ===
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
+                      child: OceanButton(
+                        label: 'Simpan',
+                        icon: Icons.save_outlined,
+                        onPressed: _submit,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Satu baris ringkasan pada dialog: label tebal di atas, nilai di bawahnya.
-/// Nilai kosong ditampilkan sebagai tanda "-".
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(value.isEmpty ? '-' : value),
-        ],
       ),
     );
   }
