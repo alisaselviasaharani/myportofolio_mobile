@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/achievement.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
@@ -7,6 +8,7 @@ import 'package:myportofolio_mobile/widgets/date_form_field.dart';
 import 'package:myportofolio_mobile/widgets/form_header.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
+import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
 
@@ -93,6 +95,7 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
       category: _category,
       imageUrl: _imageUrlController.text.trim(),
     );
+    PortfolioStore.instance.addAchievement(achievement);
     showSummaryDialog(
       context,
       title: 'Achievement berhasil ditambahkan!',
@@ -147,6 +150,7 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
       appBar: oceanAppBar(title: 'Add Achievement Form'),
       // Drawer yang sama dengan halaman utama.
       drawer: const LeftDrawer(selected: DrawerDestination.achievement),
+      bottomNavigationBar: const OceanBottomBar(),
       body: OceanBackground(
         child: Form(
           key: _formKey,
@@ -265,12 +269,22 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                     // Pratinjau periode yang akan disimpan.
                     if (_startDate != null)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                        child: Text(
-                          'Periode: ${formatPeriod(_startDate!, _endDate)}',
-                          style: const TextStyle(
-                            color: OceanColors.deep,
-                            fontWeight: FontWeight.w600,
+                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Periode: ${formatPeriod(_startDate!, _endDate)}',
+                            style: const TextStyle(
+                              color: OceanColors.deep,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
