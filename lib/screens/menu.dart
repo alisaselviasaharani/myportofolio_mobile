@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/experience_card.dart';
@@ -24,6 +25,12 @@ class MyHomePage extends StatelessWidget {
       Icons.add_circle,
       Colors.green,
       pageBuilder: (context) => const ExperienceFormPage(),
+    ),
+    ItemHomepage(
+      "Tambah Achievement",
+      Icons.emoji_events,
+      Colors.purple,
+      pageBuilder: (context) => const AchievementFormPage(),
     ),
     ItemHomepage("Logout", Icons.logout, Colors.red),
   ];
