@@ -5,68 +5,60 @@ import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
+
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/widgets/experience_card.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
+import 'package:myportofolio_mobile/widgets/mascots.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
-import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 
 /// Halaman utama aplikasi MyPortfolio.
 ///
-/// Berupa [StatelessWidget] karena tidak menyimpan state yang berubah.
-/// Isinya: kartu sapaan, tiga [InfoCard] identitas (NPM, Name, Class),
-/// grid 2 kolom [ItemCard] aksi (data dari [items]), dan bagian "My Portfolio"
-/// yang jumlah itemnya mengikuti [PortfolioStore].
+/// Isinya: kartu sapaan bermaskot ubur-ubur, grid 2 kolom [ItemCard] aksi
+/// (data dari [items]) di dalam panel kaca, dan bagian "My Portfolio" yang
+/// jumlah itemnya mengikuti [PortfolioStore].
 class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
 
-  // Identitas pemilik portofolio.
-  final String npm = "2506618433";
-  final String nama = "Alisa Selvia Saharani";
-  final String kelas = "PBP D";
-
   // Daftar tombol aksi. Warna dan halaman tujuan tiap tombol didefinisikan
-  // di sini (satu sumber).
+  // di sini (satu sumber). Add Project belum punya form (tahap berikutnya).
   final List<ItemHomepage> items = [
     ItemHomepage(
-      "Tambah Experience",
-      Icons.work,
-      OceanColors.pastelBlue,
-      pageBuilder: (context) => const ExperienceFormPage(),
-    ),
-    ItemHomepage(
-      "Tambah Education",
+      'Add Education',
       Icons.school,
-      OceanColors.pastelYellow,
+      OceanColors.cardYellow,
+      iconColor: const Color(0xFF3F3DA8),
       pageBuilder: (context) => const EducationFormPage(),
     ),
     ItemHomepage(
-      "Tambah Achievement",
-      Icons.emoji_events,
-      OceanColors.pastelPink,
+      'Add Experience',
+      Icons.work,
+      OceanColors.cardPurple,
+      iconColor: const Color(0xFF4A56C4),
+      pageBuilder: (context) => const ExperienceFormPage(),
+    ),
+    ItemHomepage(
+      'Add Certification',
+      Icons.workspace_premium,
+      OceanColors.cardPink,
+      iconColor: const Color(0xFF9A3FC4),
       pageBuilder: (context) => const AchievementFormPage(),
     ),
-    ItemHomepage("Lihat Experience", Icons.folder_open, OceanColors.pastelMint),
   ];
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold menyediakan struktur visual dasar halaman (AppBar, Body, SnackBar).
     return Scaffold(
+      // Latar laut tampil juga di balik gelombang header.
+      extendBodyBehindAppBar: true,
       appBar: oceanAppBar(
-        title: 'MyPortfolio',
-        actions: [
-          IconButton(
-            tooltip: 'Notifikasi',
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () => showInfoSnackBar(context, 'Belum ada notifikasi.'),
-          ),
-        ],
+        title: 'My Portfolio',
+        centerTitle: true,
+        actions: const [_AvatarAction()],
       ),
       // Drawer menu untuk navigasi antarhalaman.
       drawer: const LeftDrawer(selected: DrawerDestination.home),
-      bottomNavigationBar: const OceanBottomBar(homeSelected: true),
       body: OceanBackground(
         child: SingleChildScrollView(
           // Batasi lebar agar tampilan tetap proporsional di layar lebar.
@@ -74,62 +66,44 @@ class MyHomePage extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  MediaQuery.paddingOf(context).top + oceanAppBarHeight + 26,
+                  16,
+                  28,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const _HeroCard(),
-                    const SizedBox(height: 12.0),
-                    // 3 InfoCard dengan lebar dan tinggi yang sama.
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: InfoCard(
-                              title: 'NPM',
-                              content: npm,
-                              icon: Icons.badge,
-                            ),
-                          ),
-                          const SizedBox(width: 8.0),
-                          Expanded(
-                            child: InfoCard(
-                              title: 'Name',
-                              content: nama,
-                              icon: Icons.person,
-                            ),
-                          ),
-                          const SizedBox(width: 8.0),
-                          Expanded(
-                            child: InfoCard(
-                              title: 'Class',
-                              content: kelas,
-                              icon: Icons.school,
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 14.0),
+                    // Panel kaca berisi grid kartu aksi 2 kolom.
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.38),
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.75),
+                        ),
+                      ),
+                      child: GridView.count(
+                        // Kisi tidak scroll sendiri; scroll ditangani halaman.
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        crossAxisCount: 2,
+                        childAspectRatio: 1.8,
+                        // shrinkWrap agar ukuran kisi menyesuaikan tinggi anak.
+                        shrinkWrap: true,
+                        children: items.map((ItemHomepage item) {
+                          return ItemCard(item);
+                        }).toList(),
                       ),
                     ),
-                    const SizedBox(height: 16.0),
-                    // GridView menampilkan kartu tombol dalam kisi 2 kolom.
-                    GridView.count(
-                      // Kisi tidak scroll sendiri; scroll ditangani halaman.
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      crossAxisCount: 2,
-                      childAspectRatio: 1.0,
-                      // shrinkWrap agar ukuran kisi menyesuaikan tinggi anak.
-                      shrinkWrap: true,
-                      children: items.map((ItemHomepage item) {
-                        return ItemCard(item);
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20.0),
+                    const SizedBox(height: 18.0),
                     const _PortfolioSection(),
-                    const SizedBox(height: 8.0),
                   ],
                 ),
               ),
@@ -141,67 +115,99 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-/// Kartu sapaan di bagian atas beranda.
+/// Foto profil kecil di kanan AppBar.
+class _AvatarAction extends StatelessWidget {
+  const _AvatarAction();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(right: 14.0),
+      child: CircleAvatar(
+        radius: 22,
+        backgroundColor: Color(0xCCFFFFFF),
+        child: CircleAvatar(
+          radius: 19,
+          backgroundImage: AssetImage('assets/images/alisa.png'),
+        ),
+      ),
+    );
+  }
+}
+
+/// Kartu sapaan di bagian atas beranda, dengan ubur-ubur di kanan.
 class _HeroCard extends StatelessWidget {
   const _HeroCard();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: const Row(
-        children: [
-          // Avatar luar berwarna aqua berfungsi sebagai cincin,
-          // avatar dalam (lebih kecil) menampilkan foto.
-          CircleAvatar(
-            radius: 36,
-            backgroundColor: OceanColors.aqua,
-            child: CircleAvatar(
-              radius: 32,
-              backgroundImage: AssetImage('assets/images/alisa.png'),
-            ),
-          ),
-          SizedBox(width: 14.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Hi, I'm Alisa! 👋",
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                    color: OceanColors.deep,
-                  ),
-                ),
-                SizedBox(height: 4.0),
-                Text(
-                  'Selamat datang di MyPortfolio Mobile!',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.0),
-                ),
-                SizedBox(height: 2.0),
-                Text(
-                  "I'm a Computer Science student at Universitas Indonesia.\n"
-                  'Welcome to my portofolio!!!\n'
-                  'This is a little space where I share more about myself.',
-                  style: TextStyle(fontSize: 12.0, color: Colors.black54),
-                ),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(20, 22, 112, 22),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.62),
+                const Color(0xFFBFEFFC).withValues(alpha: 0.7),
               ],
             ),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(36),
+              topRight: Radius.circular(40),
+              bottomLeft: Radius.circular(44),
+              bottomRight: Radius.circular(36),
+            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.8)),
+            boxShadow: [
+              BoxShadow(
+                color: OceanColors.deep.withValues(alpha: 0.12),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ],
-      ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Hi, I'm Alisa! 👋",
+                style: TextStyle(
+                  fontSize: 26.0,
+                  fontWeight: FontWeight.w800,
+                  color: OceanColors.navy,
+                ),
+              ),
+              SizedBox(height: 6.0),
+              Text(
+                'A Computer Science Student\nwho loves building useful apps.',
+                style: TextStyle(
+                  fontSize: 14.0,
+                  height: 1.35,
+                  color: OceanColors.navy,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Rumput laut di dua sudut bawah kartu.
+        const Positioned(left: 2, bottom: -14, child: Seaweed(size: 54)),
+        const Positioned(
+          right: 2,
+          bottom: -14,
+          child: Seaweed(size: 54, flip: true),
+        ),
+        // Ubur-ubur menonjol sedikit di atas kartu.
+        const Positioned(
+          right: 10,
+          top: -22,
+          child: JellyfishMascot(width: 96),
+        ),
+      ],
     );
   }
 }
@@ -219,42 +225,68 @@ class _PortfolioSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: OceanColors.deep,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Text(
-            'My Portfolio',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [OceanColors.buttonStart, OceanColors.buttonEnd],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: OceanColors.deep.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Text(
+                'My Portfolio',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 17,
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(right: 6),
+              child: ClownfishMascot(width: 58),
+            ),
+          ],
         ),
-        const SizedBox(height: 8.0),
-        ValueListenableBuilder<int>(
-          valueListenable: store.experienceCount,
-          builder: (context, count, child) => _PortfolioTile(
-            icon: Icons.work_outline,
-            color: OceanColors.deep,
-            title: 'Experience',
-            count: count,
-          ),
-        ),
+        const SizedBox(height: 12.0),
         ValueListenableBuilder<List<Education>>(
           valueListenable: store.educations,
           builder: (context, list, child) => _PortfolioTile(
-            icon: Icons.school_outlined,
-            color: OceanColors.indigo,
+            icon: Icons.school,
+            color: const Color(0xFFCFEFFA),
+            iconColor: const Color(0xFF4A3FA8),
             title: 'Education',
             count: list.length,
+          ),
+        ),
+        ValueListenableBuilder<int>(
+          valueListenable: store.experienceCount,
+          builder: (context, count, child) => _PortfolioTile(
+            icon: Icons.work,
+            color: const Color(0xFFCFEFFA),
+            iconColor: const Color(0xFF4A56C4),
+            title: 'Experience',
+            count: count,
           ),
         ),
         ValueListenableBuilder<List<Achievement>>(
           valueListenable: store.achievements,
           builder: (context, list, child) => _PortfolioTile(
-            icon: Icons.emoji_events_outlined,
-            color: OceanColors.lavender,
-            title: 'Achievements',
+            icon: Icons.workspace_premium,
+            color: const Color(0xFFE9D8FA),
+            iconColor: const Color(0xFF9A3FC4),
+            title: 'Certifications',
             count: list.length,
           ),
         ),
@@ -267,87 +299,86 @@ class _PortfolioTile extends StatelessWidget {
   const _PortfolioTile({
     required this.icon,
     required this.color,
+    required this.iconColor,
     required this.title,
     required this.count,
   });
 
   final IconData icon;
   final Color color;
+  final Color iconColor;
   final String title;
   final int count;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white.withValues(alpha: 0.92),
-      elevation: 1,
-      margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.15),
-          child: Icon(icon, color: color),
-        ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text('$count ${count == 1 ? 'item' : 'items'}'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => showInfoSnackBar(
-          context,
-          'Daftar $title akan hadir di tahap berikutnya.',
-        ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
+        boxShadow: [
+          BoxShadow(
+            color: OceanColors.deep.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-    );
-  }
-}
-
-/// Kartu informasi yang menampilkan ikon, judul ([title]), dan isi ([content]).
-///
-/// Dipakai tiga kali di [MyHomePage] untuk NPM, Name, dan Class.
-class InfoCard extends StatelessWidget {
-  final String title;
-  final String content;
-  final IconData icon;
-
-  const InfoCard({
-    super.key,
-    required this.title,
-    required this.content,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-    return Card(
-      color: Colors.white.withValues(alpha: 0.92),
-      elevation: 2.0,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 14.0),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: primary.withValues(alpha: 0.12),
-              child: Icon(icon, color: primary, size: 20),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(22),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => showInfoSnackBar(
+            context,
+            'Daftar $title akan hadir di tahap berikutnya.',
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 28),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          color: OceanColors.navy,
+                        ),
+                      ),
+                      Text(
+                        '$count ${count == 1 ? 'item' : 'items'}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: OceanColors.navy,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: OceanColors.navy,
+                  size: 28,
+                ),
+              ],
             ),
-            const SizedBox(height: 8.0),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: primary,
-                fontSize: 12.0,
-              ),
-            ),
-            const SizedBox(height: 4.0),
-            Text(
-              content,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13.0),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -365,8 +396,17 @@ class ItemHomepage {
   final IconData icon;
   final Color color;
 
+  /// Warna ikon pada kartu.
+  final Color iconColor;
+
   /// Pembuat halaman tujuan. `null` berarti kartu hanya menampilkan SnackBar.
   final WidgetBuilder? pageBuilder;
 
-  ItemHomepage(this.name, this.icon, this.color, {this.pageBuilder});
+  ItemHomepage(
+    this.name,
+    this.icon,
+    this.color, {
+    this.iconColor = OceanColors.navy,
+    this.pageBuilder,
+  });
 }

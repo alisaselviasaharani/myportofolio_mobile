@@ -2,11 +2,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
+import 'package:myportofolio_mobile/widgets/form_card.dart';
 import 'package:myportofolio_mobile/widgets/form_header.dart';
+import 'package:myportofolio_mobile/widgets/illustrations.dart';
 import 'package:myportofolio_mobile/widgets/labeled_field.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
-import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
 
@@ -64,8 +65,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
     PortfolioStore.instance.addExperience();
     showSummaryDialog(
       context,
-      title: 'Experience berhasil ditambahkan!',
-      emoji: '💼',
+      title: 'Experience Saved!',
       items: [
         SummaryItem(
           label: 'Posisi',
@@ -111,10 +111,10 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: oceanAppBar(title: 'Add Experience Form'),
+      extendBodyBehindAppBar: true,
+      appBar: oceanAppBar(title: 'Add Experience'),
       // Drawer yang sama dengan halaman utama
       drawer: const LeftDrawer(selected: DrawerDestination.experience),
-      bottomNavigationBar: const OceanBottomBar(),
       body: OceanBackground(
         child: Form(
           key: _formKey,
@@ -129,10 +129,12 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const FormHeader(
-                      emoji: '💼',
+                      kind: FormKind.experience,
                       title: 'Add Experience',
                       subtitle: 'Fill in your experience details below.',
                     ),
+                    FormCard(
+                      children: [
                     // === Position ===
                     LabeledField(
                       label: 'Posisi / Jabatan',
@@ -264,9 +266,11 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                         ),
                       ),
                     ),
+                      ],
+                    ),
                     // === Tombol Simpan ===
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
                       child: OceanButton(
                         label: 'Simpan',
                         icon: Icons.save_outlined,

@@ -16,6 +16,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MyPortfolio',
       theme: buildOceanTheme(),
+      // Di layar lebar (web/desktop), batasi lebar seperti layar HP agar
+      // proporsinya sama dengan desain.
+      builder: (context, child) => ColoredBox(
+        color: const Color(0xFFCDEEF9),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 430),
+            child: child,
+          ),
+        ),
+      ),
       home: MyHomePage(),
     );
   }

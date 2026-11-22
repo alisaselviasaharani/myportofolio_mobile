@@ -28,9 +28,9 @@ class LabeledField extends StatelessWidget {
               TextSpan(
                 text: label,
                 style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: OceanColors.deep,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: OceanColors.navy,
                 ),
                 children: [
                   if (isRequired)

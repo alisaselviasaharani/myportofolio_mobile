@@ -5,9 +5,11 @@ import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
+import 'package:myportofolio_mobile/widgets/illustrations.dart';
+import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 
 /// Tujuan pada drawer; dipakai untuk menandai item yang sedang aktif.
-enum DrawerDestination { home, experience, education, achievement }
+enum DrawerDestination { home, project, education, experience, certification }
 
 /// Drawer navigasi yang dipakai bersama oleh semua halaman.
 ///
@@ -35,93 +37,158 @@ class LeftDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: OceanColors.foam,
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          const DrawerHeader(
-            margin: EdgeInsets.zero,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [OceanColors.deep, OceanColors.teal],
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
+      backgroundColor: const Color(0xFFE6F6FC),
+      width: 310,
+      shape: const RoundedRectangleBorder(),
+      child: OceanBackground(
+        child: Stack(
+          children: [
+            ListView(
+              padding: EdgeInsets.zero,
               children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.white,
-                  child: Text('🐙', style: TextStyle(fontSize: 30)),
+                const _DrawerHeader(),
+                const SizedBox(height: 10),
+                _DrawerTile(
+                  icon: Icons.home_outlined,
+                  title: 'Home',
+                  selected: selected == DrawerDestination.home,
+                  onTap: () => _go(context, MyHomePage()),
                 ),
-                SizedBox(height: 12),
-                Text(
-                  'Alisa Selvia Saharani',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                _DrawerTile(
+                  icon: Icons.school_outlined,
+                  title: 'Add Education',
+                  selected: selected == DrawerDestination.education,
+                  onTap: () => _go(context, const EducationFormPage()),
                 ),
-                Text(
-                  'Computer Science Student',
-                  style: TextStyle(fontSize: 13, color: Colors.white70),
+                _DrawerTile(
+                  icon: Icons.work_outline,
+                  title: 'Add Experience',
+                  selected: selected == DrawerDestination.experience,
+                  onTap: () => _go(context, const ExperienceFormPage()),
                 ),
+                _DrawerTile(
+                  icon: Icons.workspace_premium_outlined,
+                  title: 'Add Certification',
+                  selected: selected == DrawerDestination.certification,
+                  onTap: () => _go(context, const AchievementFormPage()),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  child: Divider(color: Color(0xFF9FD3E6), height: 1),
+                ),
+                _DrawerTile(
+                  icon: Icons.info_outline,
+                  title: 'About',
+                  selected: false,
+                  onTap: () => _comingSoon(context, 'About'),
+                ),
+                _DrawerTile(
+                  icon: Icons.settings_outlined,
+                  title: 'Settings',
+                  selected: false,
+                  onTap: () => _comingSoon(context, 'Settings'),
+                ),
+                _DrawerTile(
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  selected: false,
+                  onTap: () => _comingSoon(context, 'Logout'),
+                ),
+                const SizedBox(height: 120),
               ],
             ),
+            // Kepiting di dasar laut.
+            const Positioned(
+              left: 70,
+              bottom: 22,
+              child: IgnorePointer(child: CrabMascot(width: 92)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Kepala drawer: gradasi biru bergelombang, foto, nama, dan kuda laut.
+class _DrawerHeader extends StatelessWidget {
+  const _DrawerHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.paddingOf(context).top;
+    return ClipPath(
+      clipper: const WaveClipper(depth: 26),
+      child: Container(
+        height: 214 + top,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [OceanColors.headerTop, OceanColors.headerBottom],
           ),
-          const SizedBox(height: 8),
-          _DrawerTile(
-            icon: Icons.home_outlined,
-            title: 'Home',
-            selected: selected == DrawerDestination.home,
-            // Navigasi ke halaman utama portofolio
-            onTap: () => _go(context, MyHomePage()),
-          ),
-          _DrawerTile(
-            icon: Icons.add_circle_outline,
-            title: 'Add Experience',
-            selected: selected == DrawerDestination.experience,
-            onTap: () => _go(context, const ExperienceFormPage()),
-          ),
-          _DrawerTile(
-            icon: Icons.school_outlined,
-            title: 'Add Education',
-            selected: selected == DrawerDestination.education,
-            onTap: () => _go(context, const EducationFormPage()),
-          ),
-          _DrawerTile(
-            icon: Icons.emoji_events_outlined,
-            title: 'Add Achievement',
-            selected: selected == DrawerDestination.achievement,
-            onTap: () => _go(context, const AchievementFormPage()),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Divider(),
-          ),
-          _DrawerTile(
-            icon: Icons.person_outline,
-            title: 'About Me',
-            selected: false,
-            onTap: () => _comingSoon(context, 'About Me'),
-          ),
-          _DrawerTile(
-            icon: Icons.settings_outlined,
-            title: 'Settings',
-            selected: false,
-            onTap: () => _comingSoon(context, 'Settings'),
-          ),
-          _DrawerTile(
-            icon: Icons.logout,
-            title: 'Logout',
-            selected: false,
-            onTap: () => _comingSoon(context, 'Logout'),
-          ),
-        ],
+        ),
+        child: Stack(
+          children: [
+            // Gelembung hiasan.
+            for (final b in const [
+              (right: 40.0, top: 28.0, size: 18.0),
+              (right: 16.0, top: 74.0, size: 10.0),
+              (right: 84.0, top: 12.0, size: 8.0),
+            ])
+              Positioned(
+                right: b.right,
+                top: b.top + top,
+                child: Container(
+                  width: b.size,
+                  height: b.size,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.18),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+              ),
+            Positioned(
+              right: 14,
+              top: 70 + top,
+              child: const SeahorseMascot(height: 84),
+            ),
+            Positioned(
+              left: 20,
+              top: 24 + top,
+              right: 20,
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 42,
+                    backgroundColor: Colors.white,
+                    child: CircleAvatar(
+                      radius: 38,
+                      backgroundImage: AssetImage('assets/images/alisa.png'),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'Alisa Selvia Saharani',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'Computer Science Student',
+                    style: TextStyle(fontSize: 15, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -143,14 +210,19 @@ class _DrawerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
       child: ListTile(
         selected: selected,
-        selectedColor: OceanColors.deep,
-        selectedTileColor: OceanColors.aqua,
-        shape: const StadiumBorder(),
-        leading: Icon(icon),
-        title: Text(title),
+        selectedColor: OceanColors.navy,
+        selectedTileColor: const Color(0xFFBFE9F8),
+        iconColor: OceanColors.navy,
+        textColor: OceanColors.navy,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        leading: Icon(icon, size: 28),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+        ),
         onTap: onTap,
       ),
     );

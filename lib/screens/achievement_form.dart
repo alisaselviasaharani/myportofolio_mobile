@@ -5,11 +5,12 @@ import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
 import 'package:myportofolio_mobile/widgets/date_form_field.dart';
+import 'package:myportofolio_mobile/widgets/form_card.dart';
 import 'package:myportofolio_mobile/widgets/form_header.dart';
+import 'package:myportofolio_mobile/widgets/illustrations.dart';
 import 'package:myportofolio_mobile/widgets/labeled_field.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
-import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
 
@@ -98,10 +99,7 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
     PortfolioStore.instance.addAchievement(achievement);
     showSummaryDialog(
       context,
-      title: 'Achievement berhasil ditambahkan!',
-      emoji: '🏆',
-      closeLabel: 'Tutup',
-      closeIcon: Icons.close,
+      title: 'Certification Saved!',
       items: [
         SummaryItem(
           label: 'Nama Penghargaan',
@@ -148,10 +146,10 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: oceanAppBar(title: 'Add Achievement Form'),
+      extendBodyBehindAppBar: true,
+      appBar: oceanAppBar(title: 'Add Certification'),
       // Drawer yang sama dengan halaman utama.
-      drawer: const LeftDrawer(selected: DrawerDestination.achievement),
-      bottomNavigationBar: const OceanBottomBar(),
+      drawer: const LeftDrawer(selected: DrawerDestination.certification),
       body: OceanBackground(
         child: Form(
           key: _formKey,
@@ -166,10 +164,12 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const FormHeader(
-                      emoji: '🏆',
-                      title: 'Add Achievement',
-                      subtitle: 'Fill in your achievement details below.',
+                      kind: FormKind.certification,
+                      title: 'Add Certification',
+                      subtitle: 'Fill in your certification details below.',
                     ),
+                    FormCard(
+                      children: [
                     // === Nama Penghargaan ===
                     LabeledField(
                       label: 'Nama Penghargaan',
@@ -305,9 +305,11 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                         ),
                       ),
                     ),
+                      ],
+                    ),
                     // === Tombol Simpan ===
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
                       child: OceanButton(
                         label: 'Simpan',
                         icon: Icons.save_outlined,

@@ -19,6 +19,11 @@ String formatDate(DateTime date) {
   return '${date.day} ${_monthNames[date.month - 1]} ${date.year}';
 }
 
+/// Mengubah [date] menjadi teks bulan-tahun seperti `Sep 2023`.
+String formatMonthYear(DateTime date) {
+  return '${_monthNames[date.month - 1]} ${date.year}';
+}
+
 /// Menyusun teks periode dari [start] dan [end] (opsional).
 ///
 /// Jika [end] kosong atau jatuh pada hari yang sama dengan [start], hasilnya

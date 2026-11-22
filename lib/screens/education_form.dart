@@ -5,11 +5,12 @@ import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
 import 'package:myportofolio_mobile/widgets/date_form_field.dart';
+import 'package:myportofolio_mobile/widgets/form_card.dart';
 import 'package:myportofolio_mobile/widgets/form_header.dart';
+import 'package:myportofolio_mobile/widgets/illustrations.dart';
 import 'package:myportofolio_mobile/widgets/labeled_field.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
-import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
 
@@ -66,10 +67,10 @@ class _EducationFormPageState extends State<EducationFormPage> {
     setState(() {
       if (isStart) {
         _startDate = picked;
-        _startDateController.text = formatDate(picked);
+        _startDateController.text = formatMonthYear(picked);
       } else {
         _endDate = picked;
-        _endDateController.text = formatDate(picked);
+        _endDateController.text = formatMonthYear(picked);
       }
     });
   }
@@ -107,12 +108,12 @@ class _EducationFormPageState extends State<EducationFormPage> {
         ),
         SummaryItem(
           label: 'Start Date',
-          value: formatDate(education.startDate),
+          value: formatMonthYear(education.startDate),
           icon: Icons.calendar_today_outlined,
         ),
         SummaryItem(
           label: 'End Date',
-          value: formatDate(education.endDate),
+          value: formatMonthYear(education.endDate),
           icon: Icons.event_available_outlined,
         ),
         SummaryItem(
@@ -140,10 +141,10 @@ class _EducationFormPageState extends State<EducationFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: oceanAppBar(title: 'Add Education Form'),
+      extendBodyBehindAppBar: true,
+      appBar: oceanAppBar(title: 'Add Education'),
       // Drawer yang sama dengan halaman lain.
       drawer: const LeftDrawer(selected: DrawerDestination.education),
-      bottomNavigationBar: const OceanBottomBar(),
       body: OceanBackground(
         child: Form(
           key: _formKey,
@@ -158,13 +159,15 @@ class _EducationFormPageState extends State<EducationFormPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const FormHeader(
-                      emoji: '🎓',
+                      kind: FormKind.education,
                       title: 'Add Education',
                       subtitle: 'Fill in your education details below.',
                     ),
+                    FormCard(
+                      children: [
                     // === Institusi ===
                     LabeledField(
-                      label: 'Institusi',
+                      label: 'Institution',
                       isRequired: true,
                       child: TextFormField(
                         key: const Key('institutionField'),
@@ -185,7 +188,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
                     ),
                     // === Jenjang ===
                     LabeledField(
-                      label: 'Jenjang',
+                      label: 'Degree',
                       isRequired: true,
                       child: DropdownButtonFormField<DegreeLevel>(
                         key: const Key('levelField'),
@@ -211,7 +214,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
                     ),
                     // === Jurusan ===
                     LabeledField(
-                      label: 'Jurusan',
+                      label: 'Major',
                       isRequired: true,
                       child: TextFormField(
                         key: const Key('majorField'),
@@ -234,7 +237,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
                     DateFormField(
                       key: const Key('startDateField'),
                       controller: _startDateController,
-                      label: 'Tanggal Mulai',
+                      label: 'Start Date',
                       isRequired: true,
                       onTap: () => _pickDate(isStart: true),
                       validator: (_) => FormValidators.requiredDate(
@@ -246,7 +249,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
                     DateFormField(
                       key: const Key('endDateField'),
                       controller: _endDateController,
-                      label: 'Tanggal Selesai',
+                      label: 'End Date',
                       isRequired: true,
                       onTap: () => _pickDate(isStart: false),
                       validator: (_) =>
@@ -258,7 +261,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
                     ),
                     // === Website (opsional) ===
                     LabeledField(
-                      label: 'Website (opsional)',
+                      label: 'Website (optional)',
                       child: TextFormField(
                         key: const Key('websiteField'),
                         controller: _websiteController,
@@ -276,9 +279,11 @@ class _EducationFormPageState extends State<EducationFormPage> {
                         ),
                       ),
                     ),
+                      ],
+                    ),
                     // === Tombol Simpan ===
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
                       child: OceanButton(
                         label: 'Simpan',
                         icon: Icons.save_outlined,

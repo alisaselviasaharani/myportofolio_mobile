@@ -1,42 +1,47 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/widgets/illustrations.dart';
 
-/// Kepala form: emoji besar, judul, dan subjudul di tengah.
+/// Kepala form: ilustrasi besar, judul, dan subjudul di tengah.
+///
+/// Dipakai dengan `extendBodyBehindAppBar`, jadi padding atasnya sudah
+/// memperhitungkan tinggi header.
 class FormHeader extends StatelessWidget {
   const FormHeader({
     super.key,
-    required this.emoji,
+    required this.kind,
     required this.title,
     required this.subtitle,
   });
 
-  final String emoji;
+  final FormKind kind;
   final String title;
   final String subtitle;
 
   @override
   Widget build(BuildContext context) {
+    final top = MediaQuery.paddingOf(context).top + oceanAppBarHeight;
     return SizedBox(
       width: double.infinity,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        padding: EdgeInsets.fromLTRB(16, top + 6, 16, 10),
         child: Column(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 60)),
-            const SizedBox(height: 6),
+            FormIllustration(kind: kind, width: 150),
+            const SizedBox(height: 4),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: OceanColors.deep,
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: OceanColors.navy,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.black54),
+              style: const TextStyle(fontSize: 14, color: OceanColors.navy),
             ),
           ],
         ),
