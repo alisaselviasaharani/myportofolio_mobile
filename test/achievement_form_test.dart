@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
 
@@ -33,6 +34,8 @@ Future<void> _fillRequired(WidgetTester tester) async {
 }
 
 void main() {
+  setUp(() => PortfolioStore.instance.clear());
+
   testWidgets('Simpan dengan input kosong menampilkan error tiap kolom',
       (tester) async {
     await _pumpForm(tester);
@@ -108,6 +111,9 @@ void main() {
         reason: 'Dialog harus menampilkan "$text"',
       );
     }
+
+    // Data valid tersimpan di PortfolioStore.
+    expect(PortfolioStore.instance.achievements.value, hasLength(1));
 
     await tester.tap(find.text('Tutup'));
     await tester.pumpAndSettle();

@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
@@ -7,6 +8,7 @@ import 'package:myportofolio_mobile/widgets/date_form_field.dart';
 import 'package:myportofolio_mobile/widgets/form_header.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
+import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
 
@@ -87,6 +89,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
       period: formatPeriod(start, end),
       website: _websiteController.text.trim(),
     );
+    PortfolioStore.instance.addEducation(education);
     showSummaryDialog(
       context,
       title: 'Education Saved!',
@@ -140,6 +143,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
       appBar: oceanAppBar(title: 'Add Education Form'),
       // Drawer yang sama dengan halaman lain.
       drawer: const LeftDrawer(selected: DrawerDestination.education),
+      bottomNavigationBar: const OceanBottomBar(),
       body: OceanBackground(
         child: Form(
           key: _formKey,
