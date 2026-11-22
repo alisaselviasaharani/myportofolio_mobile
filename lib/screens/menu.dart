@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
+import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/widgets/experience_card.dart';
@@ -28,6 +29,12 @@ class MyHomePage extends StatelessWidget {
       Icons.add_circle,
       OceanColors.seaGreen,
       pageBuilder: (context) => const ExperienceFormPage(),
+    ),
+    ItemHomepage(
+      "Tambah Education",
+      Icons.school,
+      OceanColors.indigo,
+      pageBuilder: (context) => const EducationFormPage(),
     ),
     ItemHomepage(
       "Tambah Achievement",
