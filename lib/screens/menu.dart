@@ -120,7 +120,7 @@ class MyHomePage extends StatelessWidget {
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                       crossAxisCount: 2,
-                      childAspectRatio: 1.35,
+                      childAspectRatio: 1.0,
                       // shrinkWrap agar ukuran kisi menyesuaikan tinggi anak.
                       shrinkWrap: true,
                       children: items.map((ItemHomepage item) {
@@ -153,15 +153,24 @@ class _HeroCard extends StatelessWidget {
         color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: const Row(
         children: [
+          // Avatar luar berwarna aqua berfungsi sebagai cincin,
+          // avatar dalam (lebih kecil) menampilkan foto.
           CircleAvatar(
-            radius: 32,
+            radius: 36,
             backgroundColor: OceanColors.aqua,
-            child: Text('🐙', style: TextStyle(fontSize: 34)),
+            child: CircleAvatar(
+              radius: 32,
+              backgroundImage: AssetImage('assets/images/alisa.png'),
+            ),
           ),
           SizedBox(width: 14.0),
           Expanded(
@@ -183,7 +192,9 @@ class _HeroCard extends StatelessWidget {
                 ),
                 SizedBox(height: 2.0),
                 Text(
-                  'A Computer Science student who loves building useful apps.',
+                  "I'm a Computer Science student at Universitas Indonesia.\n"
+                  'Welcome to my portofolio!!!\n'
+                  'This is a little space where I share more about myself.',
                   style: TextStyle(fontSize: 12.0, color: Colors.black54),
                 ),
               ],
