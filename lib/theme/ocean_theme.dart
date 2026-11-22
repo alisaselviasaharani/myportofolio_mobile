@@ -12,6 +12,12 @@ class OceanColors {
   static const Color lavender = Color(0xFF9C8CE8);
   static const Color seaGreen = Color(0xFF26A69A);
   static const Color coral = Color(0xFFEF6F6C);
+
+  // Warna pastel untuk kartu aksi di beranda.
+  static const Color pastelBlue = Color(0xFFD6E4FF);
+  static const Color pastelYellow = Color(0xFFFFF1B8);
+  static const Color pastelPink = Color(0xFFF8D6F5);
+  static const Color pastelMint = Color(0xFFD3F5E6);
 }
 
 /// Tema aplikasi: skema warna dari [OceanColors], `primary` = [OceanColors.deep].
