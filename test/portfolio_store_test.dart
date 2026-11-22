@@ -32,7 +32,7 @@ void main() {
       const Achievement(
         title: 'Juara 1',
         period: '5 Nov 2026',
-        description: 'Hackathon',
+        description: 'Mencintai Diri Sendiri',
         category: AchievementCategory.competition,
       ),
     );

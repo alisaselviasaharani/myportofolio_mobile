@@ -101,7 +101,7 @@ class LeftDrawer extends StatelessWidget {
             const Positioned(
               left: 70,
               bottom: 22,
-              child: IgnorePointer(child: CrabMascot(width: 92)),
+              child: CrabMascot(width: 92),
             ),
           ],
         ),

@@ -1,4 +1,3 @@
-import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Palet warna bertema laut yang dipakai di seluruh aplikasi.

@@ -181,7 +181,7 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.sentences,
                         decoration: oceanInputDecoration(
-                          hint: 'Contoh: Juara 1 Hackathon Nasional',
+                          hint: 'Contoh: Juara 1 Mencintai Diri Sendiri',
                           prefixIcon: const Icon(Icons.emoji_events_outlined),
                         ),
                         validator: (value) => FormValidators.requiredText(

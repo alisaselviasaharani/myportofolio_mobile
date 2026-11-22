@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'package:myportofolio_mobile/widgets/ocean_bubbles.dart';
+
 /// Latar bawah laut di belakang [child].
 ///
 /// Memakai gambar `assets/images/ocean_bg.jpg` (dasar laut dengan penyu dan
@@ -46,6 +48,8 @@ class OceanBackground extends StatelessWidget {
             ),
           ),
         ),
+        // Gelembung hiasan di atas kabut, di belakang konten.
+        const Positioned.fill(child: OceanBubbles()),
         child,
       ],
     );

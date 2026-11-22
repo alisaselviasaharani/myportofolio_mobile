@@ -2,16 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 
 final _positionField = find.byKey(const Key('positionField'));
 final _companyField = find.byKey(const Key('companyField'));
 final _descriptionField = find.byKey(const Key('descriptionField'));
 final _linkField = find.byKey(const Key('linkField'));
-final _saveButton = find.widgetWithText(ElevatedButton, 'Simpan');
+final _saveButton = find.widgetWithText(OceanButton, 'Simpan');
 
 Future<void> _pumpForm(WidgetTester tester) async {
   // Layar setinggi cukup agar semua field terlihat tanpa menggulir.
-  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.physicalSize = const Size(800, 2400);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(const MaterialApp(home: ExperienceFormPage()));
@@ -33,7 +34,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Deskripsi tidak boleh kosong!'), findsOneWidget);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
     expect(PortfolioStore.instance.experienceCount.value, 0);
   });
 
@@ -53,7 +54,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
   });
 
   testWidgets('Input valid menampilkan dialog ringkasan, OK mereset form',
@@ -66,10 +67,10 @@ void main() {
     await tester.tap(_saveButton);
     await tester.pumpAndSettle();
 
-    final dialog = find.byType(AlertDialog);
+    final dialog = find.byType(Dialog);
     expect(dialog, findsOneWidget);
     for (final text in [
-      'Experience berhasil ditambahkan!',
+      'Experience Saved!',
       'Backend Intern',
       'PT Contoh',
       'Membuat REST API.',
@@ -86,7 +87,7 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
     final position = tester.widget<EditableText>(
       find.descendant(of: _positionField, matching: find.byType(EditableText)),
     );

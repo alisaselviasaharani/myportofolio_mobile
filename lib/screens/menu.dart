@@ -184,12 +184,9 @@ class _HeroCard extends StatelessWidget {
               ),
               SizedBox(height: 6.0),
               Text(
-                'A Computer Science Student\nwho loves building useful apps.',
-                style: TextStyle(
-                  fontSize: 14.0,
-                  height: 1.35,
-                  color: OceanColors.navy,
-                ),
+                'Computer Science student at Universitas Indonesia.\n'
+                'Welcome to my little corner of the sea! 🌊\n',
+                style: TextStyle(fontSize: 12.0, color: Colors.black54),
               ),
             ],
           ),

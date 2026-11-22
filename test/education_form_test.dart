@@ -3,17 +3,18 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
+import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 
 final _institutionField = find.byKey(const Key('institutionField'));
 final _majorField = find.byKey(const Key('majorField'));
 final _startDateField = find.byKey(const Key('startDateField'));
 final _endDateField = find.byKey(const Key('endDateField'));
 final _websiteField = find.byKey(const Key('websiteField'));
-final _saveButton = find.widgetWithText(ElevatedButton, 'Simpan');
+final _saveButton = find.widgetWithText(OceanButton, 'Simpan');
 
 Future<void> _pumpForm(WidgetTester tester) async {
   // Layar setinggi cukup agar semua field terlihat tanpa menggulir.
-  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.physicalSize = const Size(800, 2400);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(const MaterialApp(home: EducationFormPage()));
@@ -47,7 +48,7 @@ void main() {
     expect(find.text('Jurusan tidak boleh kosong!'), findsOneWidget);
     expect(find.text('Tanggal mulai harus dipilih!'), findsOneWidget);
     expect(find.text('Tanggal selesai harus dipilih!'), findsOneWidget);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
     expect(PortfolioStore.instance.educations.value, isEmpty);
   });
 
@@ -62,7 +63,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Institusi tidak boleh kosong!'), findsOneWidget);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
   });
 
   testWidgets('URL website yang tidak valid ditolak', (tester) async {
@@ -79,7 +80,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
   });
 
   testWidgets('Input valid menampilkan dialog ringkasan, OK mereset form',
@@ -91,7 +92,7 @@ void main() {
     await tester.tap(_saveButton);
     await tester.pumpAndSettle();
 
-    final dialog = find.byType(AlertDialog);
+    final dialog = find.byType(Dialog);
     expect(dialog, findsOneWidget);
     for (final text in [
       'Education Saved!',
@@ -109,7 +110,7 @@ void main() {
     expect(
       find.descendant(
         of: dialog,
-        matching: find.text(formatDate(DateTime.now())),
+        matching: find.text(formatMonthYear(DateTime.now())),
       ),
       findsNWidgets(2),
     );
@@ -120,7 +121,7 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
     final institution = tester.widget<EditableText>(
       find.descendant(
         of: _institutionField,

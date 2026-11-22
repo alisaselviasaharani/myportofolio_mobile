@@ -3,13 +3,25 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/main.dart';
 import 'package:myportofolio_mobile/models/education.dart';
+import 'package:myportofolio_mobile/screens/achievement_form.dart';
+import 'package:myportofolio_mobile/screens/education_form.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 
-const _cardNames = [
-  'Tambah Experience',
-  'Tambah Education',
-  'Tambah Achievement',
-  'Lihat Experience',
+/// Kartu aksi di beranda beserta halaman tujuannya.
+const List<(String, Type)> _cards = [
+  ('Add Education', EducationFormPage),
+  ('Add Experience', ExperienceFormPage),
+  ('Add Certification', AchievementFormPage),
 ];
+
+/// Layar tinggi agar semua kartu dan tile drawer terlihat tanpa menggulir.
+void _useTallScreen(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1400);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+}
 
 /// Membuka drawer lewat tombol hamburger pada AppBar.
 Future<void> _openDrawer(WidgetTester tester) async {
@@ -17,31 +29,39 @@ Future<void> _openDrawer(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Teks di dalam drawer (judul yang sama juga ada di kartu beranda).
+Finder _inDrawer(String text) => find.descendant(
+      of: find.byType(Drawer),
+      matching: find.text(text),
+    );
+
 void main() {
   setUp(() => PortfolioStore.instance.clear());
 
-  testWidgets('Halaman utama menampilkan identitas dan menu', (
+  testWidgets('Halaman utama menampilkan kartu aksi dan bagian portofolio', (
     WidgetTester tester,
   ) async {
+    _useTallScreen(tester);
     await tester.pumpWidget(const MyApp());
 
-    expect(find.text('MyPortfolio'), findsOneWidget);
-    expect(find.text('2506618433'), findsOneWidget);
-    expect(find.text('Alisa Selvia Saharani'), findsOneWidget);
-    expect(find.text('PBP D'), findsOneWidget);
+    // Judul AppBar dan label bagian "My Portfolio".
+    expect(find.text('My Portfolio'), findsNWidgets(2));
 
-    for (final name in _cardNames) {
+    for (final (name, _) in _cards) {
       expect(find.text(name), findsOneWidget);
+    }
+    for (final title in ['Education', 'Experience', 'Certifications']) {
+      expect(find.text(title), findsOneWidget);
     }
   });
 
-  for (final name in _cardNames) {
-    testWidgets('Tombol $name menampilkan SnackBar', (
+  for (final (name, _) in _cards) {
+    testWidgets('Kartu $name menampilkan SnackBar', (
       WidgetTester tester,
     ) async {
+      _useTallScreen(tester);
       await tester.pumpWidget(const MyApp());
 
-      await tester.ensureVisible(find.text(name));
       await tester.tap(find.text(name));
       await tester.pump();
 
@@ -49,62 +69,50 @@ void main() {
     });
   }
 
-  testWidgets('Kartu Tambah Achievement membuka form dan bisa kembali', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const MyApp());
+  for (final (name, page) in _cards) {
+    testWidgets('Kartu $name membuka form dan bisa kembali', (
+      WidgetTester tester,
+    ) async {
+      _useTallScreen(tester);
+      await tester.pumpWidget(const MyApp());
 
-    await tester.ensureVisible(find.text('Tambah Achievement'));
-    await tester.tap(find.text('Tambah Achievement'));
-    await tester.pumpAndSettle();
-    expect(find.text('Add Achievement Form'), findsOneWidget);
+      await tester.tap(find.text(name));
+      await tester.pumpAndSettle();
+      expect(find.byType(page), findsOneWidget);
 
-    // Setara tombol kembali bawaan perangkat (Navigator.pop).
-    tester.state<NavigatorState>(find.byType(Navigator)).pop();
-    await tester.pumpAndSettle();
-    expect(find.text('Selamat datang di MyPortfolio Mobile!'), findsOneWidget);
-  });
+      // Setara tombol kembali bawaan perangkat (Navigator.pop).
+      tester.state<NavigatorState>(find.byType(Navigator)).pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(page), findsNothing);
+      expect(find.byType(MyHomePage), findsOneWidget);
+    });
+  }
 
-  testWidgets('Drawer membuka form Achievement dan Home kembali ke utama', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const MyApp());
+  for (final (name, page) in _cards) {
+    testWidgets('Drawer membuka $name dan Home kembali ke utama', (
+      WidgetTester tester,
+    ) async {
+      _useTallScreen(tester);
+      await tester.pumpWidget(const MyApp());
 
-    await _openDrawer(tester);
-    await tester.tap(find.text('Add Achievement'));
-    await tester.pumpAndSettle();
-    expect(find.text('Add Achievement Form'), findsOneWidget);
+      await _openDrawer(tester);
+      await tester.tap(_inDrawer(name));
+      await tester.pumpAndSettle();
+      expect(find.byType(page), findsOneWidget);
 
-    // Drawer yang sama tersedia di halaman form.
-    await _openDrawer(tester);
-    await tester.tap(find.text('Home'));
-    await tester.pumpAndSettle();
-    expect(find.text('Selamat datang di MyPortfolio Mobile!'), findsOneWidget);
-  });
-
-  testWidgets('Kartu Tambah Education membuka form Education', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const MyApp());
-
-    await tester.ensureVisible(find.text('Tambah Education'));
-    await tester.tap(find.text('Tambah Education'));
-    await tester.pumpAndSettle();
-    expect(find.text('Add Education Form'), findsOneWidget);
-  });
-
-  testWidgets('Drawer membuka form Education', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
-
-    await _openDrawer(tester);
-    await tester.tap(find.text('Add Education'));
-    await tester.pumpAndSettle();
-    expect(find.text('Add Education Form'), findsOneWidget);
-  });
+      // Drawer yang sama tersedia di halaman form.
+      await _openDrawer(tester);
+      await tester.tap(_inDrawer('Home'));
+      await tester.pumpAndSettle();
+      expect(find.byType(MyHomePage), findsOneWidget);
+      expect(find.byType(page), findsNothing);
+    });
+  }
 
   testWidgets('Bagian My Portfolio menampilkan jumlah item dari store', (
     WidgetTester tester,
   ) async {
+    _useTallScreen(tester);
     PortfolioStore.instance.addEducation(
       Education(
         institution: 'Universitas Indonesia',
@@ -116,35 +124,46 @@ void main() {
     );
     await tester.pumpWidget(const MyApp());
 
-    await tester.ensureVisible(find.text('Education'));
+    expect(find.text('Education'), findsOneWidget);
     expect(find.text('1 item'), findsOneWidget);
     expect(find.text('0 items'), findsNWidgets(2));
   });
 
-  testWidgets('Tombol tambah di bottom bar membuka lembar pilihan form', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const MyApp());
+  group('OceanBottomBar', () {
+    Future<void> pumpBar(WidgetTester tester) async {
+      _useTallScreen(tester);
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox.expand(),
+            bottomNavigationBar: OceanBottomBar(),
+          ),
+        ),
+      );
+    }
 
-    await tester.tap(find.byTooltip('Tambah'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Add Education'));
-    await tester.pumpAndSettle();
-    expect(find.text('Add Education Form'), findsOneWidget);
-  });
+    testWidgets('Tombol tambah membuka lembar pilihan form', (
+      WidgetTester tester,
+    ) async {
+      await pumpBar(tester);
 
-  testWidgets('Tombol Beranda di bottom bar kembali ke halaman utama', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const MyApp());
+      await tester.tap(find.byTooltip('Tambah'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tambah data'), findsOneWidget);
 
-    await _openDrawer(tester);
-    await tester.tap(find.text('Add Education'));
-    await tester.pumpAndSettle();
-    expect(find.text('Add Education Form'), findsOneWidget);
+      await tester.tap(find.text('Add Education'));
+      await tester.pumpAndSettle();
+      expect(find.byType(EducationFormPage), findsOneWidget);
+    });
 
-    await tester.tap(find.byTooltip('Beranda'));
-    await tester.pumpAndSettle();
-    expect(find.text('Selamat datang di MyPortfolio Mobile!'), findsOneWidget);
+    testWidgets('Tombol Beranda membuka halaman utama', (
+      WidgetTester tester,
+    ) async {
+      await pumpBar(tester);
+
+      await tester.tap(find.byTooltip('Beranda'));
+      await tester.pumpAndSettle();
+      expect(find.byType(MyHomePage), findsOneWidget);
+    });
   });
 }

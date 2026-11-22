@@ -3,21 +3,20 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
+import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 
 final _titleField = find.byKey(const Key('titleField'));
 final _descriptionField = find.byKey(const Key('descriptionField'));
 final _startDateField = find.byKey(const Key('startDateField'));
 final _imageUrlField = find.byKey(const Key('imageUrlField'));
-final _saveButton = find.widgetWithText(ElevatedButton, 'Simpan');
-
+final _saveButton = find.widgetWithText(OceanButton, 'Simpan');
+const _title = 'Juara 1 Mencintai Diri Sendiri';
 Future<void> _pumpForm(WidgetTester tester) async {
   // Layar setinggi cukup agar semua field terlihat tanpa menggulir.
-  tester.view.physicalSize = const Size(800, 1400);
+  tester.view.physicalSize = const Size(800, 2400);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(
-    const MaterialApp(home: AchievementFormPage()),
-  );
+  await tester.pumpWidget(const MaterialApp(home: AchievementFormPage()));
 }
 
 Future<void> _pickStartDate(WidgetTester tester) async {
@@ -28,7 +27,7 @@ Future<void> _pickStartDate(WidgetTester tester) async {
 }
 
 Future<void> _fillRequired(WidgetTester tester) async {
-  await tester.enterText(_titleField, 'Juara 1 Hackathon');
+  await tester.enterText(_titleField, _title);
   await tester.enterText(_descriptionField, 'Juara pertama tingkat nasional.');
   await _pickStartDate(tester);
 }
@@ -36,8 +35,9 @@ Future<void> _fillRequired(WidgetTester tester) async {
 void main() {
   setUp(() => PortfolioStore.instance.clear());
 
-  testWidgets('Simpan dengan input kosong menampilkan error tiap kolom',
-      (tester) async {
+  testWidgets('Simpan dengan input kosong menampilkan error tiap kolom', (
+    tester,
+  ) async {
     await _pumpForm(tester);
 
     await tester.tap(_saveButton);
@@ -49,7 +49,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Tanggal mulai harus dipilih!'), findsOneWidget);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
   });
 
   testWidgets('Nama yang hanya berisi spasi ditolak', (tester) async {
@@ -62,7 +62,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Nama penghargaan tidak boleh kosong!'), findsOneWidget);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
   });
 
   testWidgets('URL gambar yang tidak valid ditolak', (tester) async {
@@ -79,11 +79,12 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
   });
 
-  testWidgets('Input valid menampilkan dialog ringkasan, Tutup mereset form',
-      (tester) async {
+  testWidgets('Input valid menampilkan dialog ringkasan, OK mereset form', (
+    tester,
+  ) async {
     await _pumpForm(tester);
 
     await _fillRequired(tester);
@@ -95,11 +96,11 @@ void main() {
     await tester.tap(_saveButton);
     await tester.pumpAndSettle();
 
-    final dialog = find.byType(AlertDialog);
+    final dialog = find.byType(Dialog);
     expect(dialog, findsOneWidget);
     for (final text in [
-      'Achievement berhasil ditambahkan!',
-      'Juara 1 Hackathon',
+      'Certification Saved!',
+      _title,
       'Juara pertama tingkat nasional.',
       'Competition',
       formatDate(DateTime.now()),
@@ -115,10 +116,10 @@ void main() {
     // Data valid tersimpan di PortfolioStore.
     expect(PortfolioStore.instance.achievements.value, hasLength(1));
 
-    await tester.tap(find.text('Tutup'));
+    await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
     final titleText = tester.widget<EditableText>(
       find.descendant(of: _titleField, matching: find.byType(EditableText)),
     );

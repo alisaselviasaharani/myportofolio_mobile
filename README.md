@@ -208,7 +208,11 @@ Alur dan struktur:
 - Tombol **Simpan** memanggil `FormState.validate()`. Dialog ringkasan (`AlertDialog` lewat `showDialog()`) hanya muncul jika semua input valid, dan tombol **Tutup** menutup dialog lalu mereset form.
 - Logika validasi dipisah ke `lib/utils/validators.dart` (fungsi murni) dan diuji tanpa UI.
 
-Pengujian manual (berlaku untuk form Education dan Achievement): buka form dari kartu dan dari drawer; kosongkan input wajib lalu tekan Simpan (pesan error muncul pada kolom terkait); isi nama dengan spasi saja (ditolak); isi URL `www.google.com` (ditolak); lengkapi isian lalu Simpan (dialog menampilkan data); tekan Tutup (form kosong kembali); buka drawer lalu Home (kembali ke halaman utama); ulangi di lebar layar ponsel. Hasil: `flutter analyze` → [ISI: tempel hasil, harapan `No issues found!`]; `flutter test` → [ISI: tempel jumlah test yang lulus].
+**Pengujian manual** (berlaku untuk form Education dan Achievement): buka form dari kartu dan dari drawer; kosongkan input wajib lalu tekan Simpan (pesan error muncul pada kolom terkait); isi nama dengan spasi saja (ditolak); isi URL `www.google.com` (ditolak); lengkapi isian lalu Simpan (dialog menampilkan data); tekan Tutup (form kosong kembali); buka drawer lalu Home (kembali ke halaman utama); ulangi di lebar layar ponsel.
+
+**Hasil pengujian:**
+- `flutter analyze` → **No issues found!** (ran in 9.6s).
+- `flutter test` → **All tests passed!** (43 tests passed).
 
 **Pertanyaan Reflektif**
 
@@ -225,3 +229,6 @@ Pengujian manual (berlaku untuk form Education dan Achievement): buka form dari 
    `GlobalKey<FormState>` (`_formKey`) menghubungkan tombol Simpan dengan `FormState` milik `Form`, sehingga kode di luar field dapat memanggil `validate()` dan `reset()`. Setiap `validator` adalah fungsi yang menerima isi field dan mengembalikan pesan error, atau `null` jika valid. Saat Simpan ditekan, `validate()` menjalankan semua validator, menampilkan pesan pada kolom yang gagal, dan mengembalikan `true` hanya jika semuanya valid; dialog baru dibuka setelah itu. Contoh nilai yang ditolak: nama penghargaan `"     "` (hanya spasi), URL `www.google.com` (tanpa skema), atau tanggal selesai yang lebih awal dari tanggal mulai. Memilih jenis input atau papan ketik saja belum cukup karena `TextInputType.url` hanya mengubah tata letak keyboard dan tidak membatasi isi: pengguna tetap bisa mengetik atau menempel teks apa pun, termasuk spasi saja, dan `showDatePicker()` tidak menjamin hubungan antara dua tanggal. Aturan harus dicek oleh validator.
 
 ## AI Disclosure
+Dalam Tugas 8, saya menggunakan Claude sebagai alat bantu untuk memahami dan menerapkan konsep Flutter seperti Navigator.push(), Navigator.pushReplacement(), Navigator.pop(), Drawer, Form, GlobalKey<FormState>, validator, dan showDialog(). Claude juga digunakan untuk membantu proses pengembangan halaman formulir Education dan Achievement, memberikan saran terkait tata letak dan desain antarmuka, serta membantu proses debugging, mencari penyebab error, dan memperbaiki kode program. Meskipun menggunakan AI sebagai alat bantu, saya tetap mempelajari, memeriksa, menyesuaikan, dan menguji setiap kode atau saran yang diberikan, termasuk menjalankan sendiri flutter analyze dan flutter test, agar sesuai dengan kebutuhan proyek dan pemahaman saya.
+
+Link log chat AI: https://claude.ai/share/680c0840-af01-4534-9371-666993665b07

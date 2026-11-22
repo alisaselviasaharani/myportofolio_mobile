@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Jenis ilustrasi besar di kepala form.
@@ -433,88 +432,188 @@ class _SeahorsePainter extends CustomPainter {
 }
 
 /// Kepiting merah (kotak desain 110 x 70).
-class CrabMascot extends StatelessWidget {
+///
+/// Bergerak sekali saat muncul: berjalan menyamping kiri-kanan sambil
+/// mengangkat capit bergantian, lalu diam. Ketuk kepiting untuk mengulang.
+/// Animasinya berhenti sendiri (tidak berulang selamanya), jadi aman untuk
+/// `pumpAndSettle()` pada widget test.
+class CrabMascot extends StatefulWidget {
   const CrabMascot({super.key, this.width = 90});
 
   final double width;
 
   @override
+  State<CrabMascot> createState() => _CrabMascotState();
+}
+
+class _CrabMascotState extends State<CrabMascot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 3200),
+  )..forward();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _replay() => _controller.forward(from: 0);
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: width * 70 / 110,
-      child: const CustomPaint(painter: _CrabPainter()),
+    final height = widget.width * 70 / 110;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _replay,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final t = _controller.value;
+          // 0 saat diam, 1 saat paling aktif (awal dan akhir selalu diam).
+          final energy = math.sin(math.pi * t);
+          final dx = math.sin(t * math.pi * 4) * 0.12 * widget.width * energy;
+          return Transform.translate(
+            offset: Offset(dx, 0),
+            child: SizedBox(
+              width: widget.width,
+              height: height,
+              child: CustomPaint(
+                painter: _CrabPainter(
+                  legPhase: t * math.pi * 16,
+                  clawPhase: t * math.pi * 10,
+                  energy: energy,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
 
 class _CrabPainter extends CustomPainter {
-  const _CrabPainter();
+  const _CrabPainter({
+    this.legPhase = 0,
+    this.clawPhase = 0,
+    this.energy = 0,
+  });
+
+  final double legPhase;
+  final double clawPhase;
+  final double energy;
+
+  static const Color _red = Color(0xFFE8483C);
+  static const Color _light = Color(0xFFFF6A5C);
+  static const Color _dark = Color(0xFFB92E26);
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
     canvas.scale(size.width / 110, size.height / 70);
-    const red = Color(0xFFE8483C);
-    const dark = Color(0xFFC2332A);
-    final leg = Paint()
+
+    // Kaki: dua ruas, bergoyang bergantian saat berjalan.
+    final legPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 4
-      ..color = dark;
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = 3.6
+      ..color = _dark;
     for (final s in const [-1.0, 1.0]) {
       for (var i = 0; i < 3; i++) {
-        final y = 46.0 + i * 6;
-        canvas.drawLine(
-          Offset(55 + s * 28, y),
-          Offset(55 + s * (42 + i * 2), y + 14),
-          leg,
+        final wiggle =
+            math.sin(legPhase + i * 2.1 + (s > 0 ? math.pi : 0)) * 2.2 * energy;
+        final y = 50.0 + i * 5;
+        canvas.drawPath(
+          Path()
+            ..moveTo(55 + s * 26, y)
+            ..lineTo(55 + s * (36 + i * 2.5), y + 3)
+            ..lineTo(55 + s * (40 + i * 3), y + 11 + wiggle),
+          legPaint,
         );
       }
     }
-    // Capit dan lengan.
-    final arm = Paint()
+
+    // Lengan dan capit: capit kiri dan kanan terangkat bergantian.
+    final armPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5
-      ..color = red;
-    canvas.drawLine(const Offset(30, 38), const Offset(18, 24), arm);
-    canvas.drawLine(const Offset(80, 38), const Offset(92, 24), arm);
-    for (final cx in const [16.0, 94.0]) {
-      canvas.drawCircle(Offset(cx, 20), 12, Paint()..color = red);
+      ..strokeWidth = 5.5
+      ..color = _red;
+    for (final s in const [-1.0, 1.0]) {
+      final lift =
+          math.max(0.0, math.sin(clawPhase + (s > 0 ? math.pi : 0))) * energy;
+      final claw = Offset(55 + s * 40, 26 - lift * 8);
+      canvas.drawLine(Offset(55 + s * 26, 42), claw, armPaint);
+
+      canvas.save();
+      canvas.translate(claw.dx, claw.dy);
+      canvas.rotate(-s * 0.4); // mulut capit menghadap ke dalam
+      canvas.drawCircle(Offset.zero, 11.5, Paint()..color = _red);
+      // Celah capit.
       canvas.drawPath(
         Path()
-          ..moveTo(cx, 8)
-          ..lineTo(cx + (cx < 55 ? 5 : -5), 20)
-          ..lineTo(cx, 18)
+          ..moveTo(-3.4, -12)
+          ..lineTo(3.4, -12)
+          ..lineTo(0, -2.5)
           ..close(),
-        Paint()..color = const Color(0xFFFFE3DF),
+        Paint()..color = _dark,
       );
+      canvas.drawCircle(
+        const Offset(-4.5, 3),
+        2.2,
+        Paint()..color = const Color(0x55FFFFFF),
+      );
+      canvas.restore();
     }
+
     // Badan.
     canvas.drawOval(
-      const Rect.fromLTWH(20, 26, 70, 40),
+      const Rect.fromLTWH(21, 28, 68, 38),
       Paint()
         ..shader = ui.Gradient.linear(
-          const Offset(0, 26),
+          const Offset(0, 28),
           const Offset(0, 66),
-          const [Color(0xFFFF6A5C), red],
+          const [_light, _red],
         ),
     );
-    // Mata bertangkai.
-    for (final x in const [45.0, 65.0]) {
-      canvas.drawLine(Offset(x, 30), Offset(x, 22), arm..strokeWidth = 3);
-      canvas.drawCircle(Offset(x, 18), 7, Paint()..color = Colors.white);
+    canvas.drawOval(
+      const Rect.fromLTWH(36, 31, 22, 8),
+      Paint()..color = const Color(0x40FFFFFF),
+    );
+    // Pipi merona.
+    final blush = Paint()..color = const Color(0x99FF9AB0);
+    canvas.drawCircle(const Offset(38, 50), 4.2, blush);
+    canvas.drawCircle(const Offset(72, 50), 4.2, blush);
+
+    // Mata di atas tangkai pendek.
+    final stalk = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3
+      ..color = _red;
+    for (final x in const [46.0, 64.0]) {
+      canvas.drawLine(Offset(x, 32), Offset(x, 24), stalk);
+      canvas.drawCircle(Offset(x, 19), 7, Paint()..color = Colors.white);
       canvas.drawCircle(
-        Offset(x, 18.5),
-        3.4,
+        Offset(x + 0.5, 19.8),
+        3.6,
         Paint()..color = const Color(0xFF222222),
       );
+      canvas.drawCircle(
+        Offset(x + 1.6, 18.4),
+        1.2,
+        Paint()..color = Colors.white,
+      );
     }
+
+    // Senyum.
     canvas.drawArc(
-      const Rect.fromLTWH(47, 38, 16, 10),
-      0.2,
-      math.pi - 0.4,
+      const Rect.fromLTWH(48, 41, 14, 10),
+      0.25,
+      math.pi - 0.5,
       false,
       Paint()
         ..style = PaintingStyle.stroke
@@ -526,5 +625,8 @@ class _CrabPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _CrabPainter oldDelegate) =>
+      oldDelegate.legPhase != legPhase ||
+      oldDelegate.clawPhase != clawPhase ||
+      oldDelegate.energy != energy;
 }
