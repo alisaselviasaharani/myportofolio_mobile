@@ -1,7 +1,9 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
+import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 
 class ExperienceFormPage extends StatefulWidget {
   const ExperienceFormPage({super.key});
@@ -33,6 +35,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
       appBar: oceanAppBar(title: 'Add Experience Form'),
       // Drawer yang sama dengan halaman utama
       drawer: const LeftDrawer(selected: DrawerDestination.experience),
+      bottomNavigationBar: const OceanBottomBar(),
       body: OceanBackground(
         child: Form(
         key: _formKey,
@@ -150,6 +153,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
+                        PortfolioStore.instance.addExperience();
                         showDialog(
                           context: context,
                           builder: (context) {
