@@ -1,9 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 
-/// Tombol aksi berbentuk kartu berwarna untuk satu [ItemHomepage].
+/// Tombol aksi berbentuk kartu pastel untuk satu [ItemHomepage].
 ///
-/// Warna latar dibaca dari `item.color`. Menekan kartu menampilkan SnackBar
+/// Warna latar dibaca dari `item.color`, sedangkan warna ikon dan teks dibuat
+/// dengan menggelapkan warna itu. Menekan kartu menampilkan SnackBar
 /// "Kamu telah menekan tombol [Nama Tombol]!", lalu membuka halaman tujuan
 /// (`item.pageBuilder`) dengan `Navigator.push()` jika item punya tujuan.
 class ItemCard extends StatelessWidget {
@@ -13,13 +14,14 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = Color.lerp(item.color, Colors.black, 0.6)!;
     return Material(
       clipBehavior: Clip.antiAlias,
       elevation: 3,
-      shadowColor: item.color.withValues(alpha: 0.5),
+      shadowColor: Colors.black26,
       // Warna latar diambil dari model, jadi tiap tombol punya warna sendiri.
       color: item.color,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(22),
       child: InkWell(
         // Aksi ketika kartu ditekan oleh pengguna.
         onTap: () {
@@ -40,33 +42,31 @@ class ItemCard extends StatelessWidget {
             );
           }
         },
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Lingkaran translusen di belakang ikon.
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.22),
-                  ),
-                  child: Icon(item.icon, color: Colors.white, size: 28.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Lingkaran putih translusen di belakang ikon.
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.65),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  item.name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Icon(item.icon, color: foreground, size: 28.0),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                item.name,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: foreground,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14.0,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
