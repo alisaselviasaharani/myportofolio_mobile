@@ -42,16 +42,26 @@ AppBar oceanAppBar({required String title, List<Widget>? actions}) {
     foregroundColor: Colors.white,
     elevation: 0,
     actions: actions,
+    // Gradasi biru tua ke tosca di belakang judul.
+    flexibleSpace: const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [OceanColors.deep, OceanColors.teal],
+        ),
+      ),
+    ),
   );
 }
 
 /// Dekorasi input seragam: terisi putih, sudut membulat, dan border merah
-/// saat error.
+/// saat error. Label ditampilkan di atas field lewat `LabeledField`, jadi
+/// di sini hanya ada [hint]. Penghitung karakter disembunyikan kecuali
+/// [showCounter] `true` (batas panjang tetap berlaku lewat `maxLength`).
 InputDecoration oceanInputDecoration({
-  required String label,
   String? hint,
   Widget? prefixIcon,
   Widget? suffixIcon,
+  bool showCounter = false,
 }) {
   OutlineInputBorder border(Color color, [double width = 1.0]) {
     return OutlineInputBorder(
@@ -61,13 +71,14 @@ InputDecoration oceanInputDecoration({
   }
 
   return InputDecoration(
-    labelText: label,
     hintText: hint,
+    hintStyle: const TextStyle(color: Colors.black38),
     prefixIcon: prefixIcon,
     suffixIcon: suffixIcon,
+    counterText: showCounter ? null : '',
     filled: true,
     fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
     border: border(OceanColors.aqua),
     enabledBorder: border(OceanColors.aqua),
     focusedBorder: border(OceanColors.deep, 2.0),

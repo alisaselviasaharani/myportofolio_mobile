@@ -6,6 +6,7 @@ import 'package:myportofolio_mobile/utils/period_format.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
 import 'package:myportofolio_mobile/widgets/date_form_field.dart';
 import 'package:myportofolio_mobile/widgets/form_header.dart';
+import 'package:myportofolio_mobile/widgets/labeled_field.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
@@ -32,7 +33,6 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
   static const int _imageUrlMaxLength = 500;
   static const AchievementCategory _defaultCategory =
       AchievementCategory.academic;
-  static const EdgeInsets _fieldPadding = EdgeInsets.all(8.0);
 
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
@@ -101,6 +101,7 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
       title: 'Achievement berhasil ditambahkan!',
       emoji: '🏆',
       closeLabel: 'Tutup',
+      closeIcon: Icons.close,
       items: [
         SummaryItem(
           label: 'Nama Penghargaan',
@@ -170,8 +171,9 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                       subtitle: 'Fill in your achievement details below.',
                     ),
                     // === Nama Penghargaan ===
-                    Padding(
-                      padding: _fieldPadding,
+                    LabeledField(
+                      label: 'Nama Penghargaan',
+                      isRequired: true,
                       child: TextFormField(
                         key: const Key('titleField'),
                         controller: _titleController,
@@ -179,7 +181,6 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.sentences,
                         decoration: oceanInputDecoration(
-                          label: 'Nama Penghargaan',
                           hint: 'Contoh: Juara 1 Hackathon Nasional',
                           prefixIcon: const Icon(Icons.emoji_events_outlined),
                         ),
@@ -191,8 +192,9 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                       ),
                     ),
                     // === Deskripsi ===
-                    Padding(
-                      padding: _fieldPadding,
+                    LabeledField(
+                      label: 'Deskripsi Penghargaan',
+                      isRequired: true,
                       child: TextFormField(
                         key: const Key('descriptionField'),
                         controller: _descriptionController,
@@ -202,8 +204,8 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                         keyboardType: TextInputType.multiline,
                         textCapitalization: TextCapitalization.sentences,
                         decoration: oceanInputDecoration(
-                          label: 'Deskripsi Penghargaan',
                           hint: 'Ceritakan penghargaanmu',
+                          showCounter: true,
                         ),
                         validator: (value) => FormValidators.requiredText(
                           value,
@@ -213,12 +215,12 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                       ),
                     ),
                     // === Kategori ===
-                    Padding(
-                      padding: _fieldPadding,
+                    LabeledField(
+                      label: 'Kategori Penghargaan',
+                      isRequired: true,
                       child: DropdownButtonFormField<AchievementCategory>(
                         key: const Key('categoryField'),
                         decoration: oceanInputDecoration(
-                          label: 'Kategori Penghargaan',
                           prefixIcon: const Icon(Icons.category_outlined),
                         ),
                         // Nilai awal konstan agar reset() kembali ke default.
@@ -239,44 +241,39 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                       ),
                     ),
                     // === Tanggal Mulai ===
-                    Padding(
-                      padding: _fieldPadding,
-                      child: DateFormField(
-                        key: const Key('startDateField'),
-                        controller: _startDateController,
-                        label: 'Tanggal Mulai',
-                        onTap: () => _pickDate(isStart: true),
-                        validator: (_) => FormValidators.requiredDate(
-                          _startDate,
-                          fieldName: 'Tanggal mulai',
-                        ),
+                    DateFormField(
+                      key: const Key('startDateField'),
+                      controller: _startDateController,
+                      label: 'Tanggal Mulai',
+                      isRequired: true,
+                      onTap: () => _pickDate(isStart: true),
+                      validator: (_) => FormValidators.requiredDate(
+                        _startDate,
+                        fieldName: 'Tanggal mulai',
                       ),
                     ),
                     // === Tanggal Selesai (opsional) ===
-                    Padding(
-                      padding: _fieldPadding,
-                      child: DateFormField(
-                        key: const Key('endDateField'),
-                        controller: _endDateController,
-                        label: 'Tanggal Selesai (opsional)',
-                        onTap: () => _pickDate(isStart: false),
-                        onClear: _endDate == null ? null : _clearEndDate,
-                        clearTooltip: 'Hapus tanggal selesai',
-                        validator: (_) =>
-                            FormValidators.dateOrder(_startDate, _endDate),
-                      ),
+                    DateFormField(
+                      key: const Key('endDateField'),
+                      controller: _endDateController,
+                      label: 'Tanggal Selesai (opsional)',
+                      onTap: () => _pickDate(isStart: false),
+                      onClear: _endDate == null ? null : _clearEndDate,
+                      clearTooltip: 'Hapus tanggal selesai',
+                      validator: (_) =>
+                          FormValidators.dateOrder(_startDate, _endDate),
                     ),
                     // Pratinjau periode yang akan disimpan.
                     if (_startDate != null)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: OceanColors.aqua.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -289,8 +286,8 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                         ),
                       ),
                     // === URL Gambar (opsional) ===
-                    Padding(
-                      padding: _fieldPadding,
+                    LabeledField(
+                      label: 'URL Gambar Penghargaan (opsional)',
                       child: TextFormField(
                         key: const Key('imageUrlField'),
                         controller: _imageUrlController,
@@ -298,7 +295,6 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                         keyboardType: TextInputType.url,
                         textInputAction: TextInputAction.done,
                         decoration: oceanInputDecoration(
-                          label: 'URL Gambar Penghargaan (opsional)',
                           hint: 'https://contoh.com/gambar.png',
                           prefixIcon: const Icon(Icons.link),
                         ),
@@ -311,7 +307,7 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                     ),
                     // === Tombol Simpan ===
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
+                      padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),
                       child: OceanButton(
                         label: 'Simpan',
                         icon: Icons.save_outlined,
