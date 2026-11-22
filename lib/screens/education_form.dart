@@ -6,6 +6,7 @@ import 'package:myportofolio_mobile/utils/period_format.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
 import 'package:myportofolio_mobile/widgets/date_form_field.dart';
 import 'package:myportofolio_mobile/widgets/form_header.dart';
+import 'package:myportofolio_mobile/widgets/labeled_field.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
@@ -30,7 +31,6 @@ class _EducationFormPageState extends State<EducationFormPage> {
   static const int _majorMaxLength = 90;
   static const int _websiteMaxLength = 255;
   static const DegreeLevel _defaultLevel = DegreeLevel.bachelor;
-  static const EdgeInsets _fieldPadding = EdgeInsets.all(8.0);
 
   final _formKey = GlobalKey<FormState>();
   final _institutionController = TextEditingController();
@@ -163,8 +163,9 @@ class _EducationFormPageState extends State<EducationFormPage> {
                       subtitle: 'Fill in your education details below.',
                     ),
                     // === Institusi ===
-                    Padding(
-                      padding: _fieldPadding,
+                    LabeledField(
+                      label: 'Institusi',
+                      isRequired: true,
                       child: TextFormField(
                         key: const Key('institutionField'),
                         controller: _institutionController,
@@ -172,10 +173,8 @@ class _EducationFormPageState extends State<EducationFormPage> {
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.words,
                         decoration: oceanInputDecoration(
-                          label: 'Institusi',
                           hint: 'Contoh: Universitas Indonesia',
-                          prefixIcon:
-                              const Icon(Icons.account_balance_outlined),
+                          prefixIcon: const Icon(Icons.account_balance_outlined),
                         ),
                         validator: (value) => FormValidators.requiredText(
                           value,
@@ -185,12 +184,12 @@ class _EducationFormPageState extends State<EducationFormPage> {
                       ),
                     ),
                     // === Jenjang ===
-                    Padding(
-                      padding: _fieldPadding,
+                    LabeledField(
+                      label: 'Jenjang',
+                      isRequired: true,
                       child: DropdownButtonFormField<DegreeLevel>(
                         key: const Key('levelField'),
                         decoration: oceanInputDecoration(
-                          label: 'Jenjang',
                           prefixIcon: const Icon(Icons.school_outlined),
                         ),
                         // Nilai awal konstan agar reset() kembali ke default.
@@ -211,8 +210,9 @@ class _EducationFormPageState extends State<EducationFormPage> {
                       ),
                     ),
                     // === Jurusan ===
-                    Padding(
-                      padding: _fieldPadding,
+                    LabeledField(
+                      label: 'Jurusan',
+                      isRequired: true,
                       child: TextFormField(
                         key: const Key('majorField'),
                         controller: _majorController,
@@ -220,7 +220,6 @@ class _EducationFormPageState extends State<EducationFormPage> {
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.words,
                         decoration: oceanInputDecoration(
-                          label: 'Jurusan',
                           hint: 'Contoh: Ilmu Komputer',
                           prefixIcon: const Icon(Icons.menu_book_outlined),
                         ),
@@ -232,38 +231,34 @@ class _EducationFormPageState extends State<EducationFormPage> {
                       ),
                     ),
                     // === Tanggal Mulai ===
-                    Padding(
-                      padding: _fieldPadding,
-                      child: DateFormField(
-                        key: const Key('startDateField'),
-                        controller: _startDateController,
-                        label: 'Tanggal Mulai',
-                        onTap: () => _pickDate(isStart: true),
-                        validator: (_) => FormValidators.requiredDate(
-                          _startDate,
-                          fieldName: 'Tanggal mulai',
-                        ),
+                    DateFormField(
+                      key: const Key('startDateField'),
+                      controller: _startDateController,
+                      label: 'Tanggal Mulai',
+                      isRequired: true,
+                      onTap: () => _pickDate(isStart: true),
+                      validator: (_) => FormValidators.requiredDate(
+                        _startDate,
+                        fieldName: 'Tanggal mulai',
                       ),
                     ),
                     // === Tanggal Selesai (wajib, tidak sebelum mulai) ===
-                    Padding(
-                      padding: _fieldPadding,
-                      child: DateFormField(
-                        key: const Key('endDateField'),
-                        controller: _endDateController,
-                        label: 'Tanggal Selesai',
-                        onTap: () => _pickDate(isStart: false),
-                        validator: (_) =>
-                            FormValidators.requiredDate(
-                              _endDate,
-                              fieldName: 'Tanggal selesai',
-                            ) ??
-                            FormValidators.dateOrder(_startDate, _endDate),
-                      ),
+                    DateFormField(
+                      key: const Key('endDateField'),
+                      controller: _endDateController,
+                      label: 'Tanggal Selesai',
+                      isRequired: true,
+                      onTap: () => _pickDate(isStart: false),
+                      validator: (_) =>
+                          FormValidators.requiredDate(
+                            _endDate,
+                            fieldName: 'Tanggal selesai',
+                          ) ??
+                          FormValidators.dateOrder(_startDate, _endDate),
                     ),
                     // === Website (opsional) ===
-                    Padding(
-                      padding: _fieldPadding,
+                    LabeledField(
+                      label: 'Website (opsional)',
                       child: TextFormField(
                         key: const Key('websiteField'),
                         controller: _websiteController,
@@ -271,7 +266,6 @@ class _EducationFormPageState extends State<EducationFormPage> {
                         keyboardType: TextInputType.url,
                         textInputAction: TextInputAction.done,
                         decoration: oceanInputDecoration(
-                          label: 'Website (opsional)',
                           hint: 'https://www.ui.ac.id',
                           prefixIcon: const Icon(Icons.link),
                         ),
@@ -284,7 +278,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
                     ),
                     // === Tombol Simpan ===
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
+                      padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),
                       child: OceanButton(
                         label: 'Simpan',
                         icon: Icons.save_outlined,

@@ -13,27 +13,30 @@ class SummaryItem {
 
 /// Menampilkan [AlertDialog] ringkasan isian formulir.
 ///
-/// Tombol penutup (label [closeLabel]) menutup dialog lalu memanggil
-/// [onClosed], misalnya untuk mereset form.
+/// Isian ditata dalam satu kotak putih berpembatas. Tombol penutup (label
+/// [closeLabel]) menutup dialog lalu memanggil [onClosed], misalnya untuk
+/// mereset form.
 void showSummaryDialog(
   BuildContext context, {
   required String title,
   required List<SummaryItem> items,
   String? message,
   String closeLabel = 'OK',
-  String emoji = '🐋',
+  IconData closeIcon = Icons.check,
+  String emoji = '🐳',
   VoidCallback? onClosed,
 }) {
   showDialog<void>(
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        icon: Text(emoji, style: const TextStyle(fontSize: 48)),
+        backgroundColor: const Color(0xFFF1FBFF),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        icon: Text(emoji, style: const TextStyle(fontSize: 64)),
         title: Text(
           title,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -45,13 +48,32 @@ void showSummaryDialog(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Text(message),
                 ),
-              for (final item in items) _SummaryRow(item: item),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: OceanColors.aqua),
+                ),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < items.length; i++) ...[
+                      if (i > 0) const Divider(height: 1),
+                      _SummaryRow(item: items[i]),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
         ),
         actions: [
           OceanButton(
             label: closeLabel,
+            icon: closeIcon,
             onPressed: () {
               Navigator.pop(dialogContext);
               onClosed?.call();
@@ -71,13 +93,13 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (item.icon != null) ...[
             Icon(item.icon, color: OceanColors.deep, size: 22),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
           ],
           Expanded(
             child: Column(
