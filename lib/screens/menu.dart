@@ -24,7 +24,7 @@ class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
 
   // Daftar tombol aksi. Warna dan halaman tujuan tiap tombol didefinisikan
-  // di sini (satu sumber). Add Project belum punya form (tahap berikutnya).
+  // di sini (satu sumber).
   final List<ItemHomepage> items = [
     ItemHomepage(
       'Add Education',

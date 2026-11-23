@@ -13,7 +13,6 @@ import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 /// Tujuan pada drawer; dipakai untuk menandai item yang sedang aktif.
 enum DrawerDestination {
   home,
-  project,
   education,
   experience,
   certification,

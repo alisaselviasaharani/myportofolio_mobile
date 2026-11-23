@@ -20,13 +20,6 @@ class PortfolioStore {
   /// Jumlah experience yang sudah disimpan (model Experience belum dibuat).
   final ValueNotifier<int> experienceCount = ValueNotifier(0);
 
-  /// Jumlah project yang sudah disimpan (model Project dibuat di tahap form).
-  final ValueNotifier<int> projectCount = ValueNotifier(0);
-
-  void addProject() {
-    projectCount.value = projectCount.value + 1;
-  }
-
   void addEducation(Education education) {
     educations.value = [...educations.value, education];
   }
@@ -44,6 +37,5 @@ class PortfolioStore {
     educations.value = const [];
     achievements.value = const [];
     experienceCount.value = 0;
-    projectCount.value = 0;
   }
 }

@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:material_ui/material_ui.dart';
 
 /// Jenis ilustrasi besar di kepala form.
-enum FormKind { project, education, experience, certification }
+enum FormKind { education, experience, certification }
 
 /// Ilustrasi besar di kepala form (kotak desain 150 x 110), digambar dengan
 /// kode: topi wisuda + buku, koper, kurung kode, atau medali.
@@ -43,8 +43,6 @@ class _FormPainter extends CustomPainter {
         _briefcase(canvas);
       case FormKind.certification:
         _medal(canvas);
-      case FormKind.project:
-        _code(canvas);
     }
     canvas.restore();
   }
@@ -225,50 +223,6 @@ class _FormPainter extends CustomPainter {
       const Rect.fromLTWH(54, 20, 14, 8),
       Paint()..color = Colors.white.withValues(alpha: 0.55),
     );
-  }
-
-  void _code(Canvas canvas) {
-    final card = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(24, 14, 102, 78),
-      const Radius.circular(18),
-    );
-    canvas.drawRRect(
-      card,
-      Paint()
-        ..shader = ui.Gradient.linear(
-          const Offset(24, 14),
-          const Offset(126, 92),
-          const [Color(0xFFD9D6FF), Color(0xFFB7B2F5)],
-        ),
-    );
-    canvas.drawRRect(
-      card,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
-        ..color = _navy,
-    );
-    final p = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 8
-      ..color = _navy;
-    canvas.drawPath(
-      Path()
-        ..moveTo(60, 36)
-        ..lineTo(44, 53)
-        ..lineTo(60, 70),
-      p,
-    );
-    canvas.drawPath(
-      Path()
-        ..moveTo(90, 36)
-        ..lineTo(106, 53)
-        ..lineTo(90, 70),
-      p,
-    );
-    canvas.drawLine(const Offset(80, 34), const Offset(70, 72), p..strokeWidth = 6);
   }
 
   @override
