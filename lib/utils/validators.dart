@@ -99,4 +99,46 @@ class FormValidators {
     }
     return null;
   }
+
+  /// Username wajib: 3 sampai 150 karakter, hanya huruf, angka, dan
+  /// `. @ + - _` (aturan username bawaan Django).
+  static String? username(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return 'Username tidak boleh kosong!';
+    }
+    if (text.length < 3) {
+      return 'Username minimal 3 karakter!';
+    }
+    if (text.length > 150) {
+      return 'Username maksimal 150 karakter!';
+    }
+    if (!RegExp(r'^[\w.@+-]+$').hasMatch(text)) {
+      return 'Username hanya boleh huruf, angka, dan . @ + - _';
+    }
+    return null;
+  }
+
+  /// Kata sandi wajib: tidak boleh kosong dan minimal [minLength] karakter.
+  /// Spasi di tepi tidak dipangkas karena bagian dari kata sandi.
+  static String? password(String? value, {int minLength = 8}) {
+    if (value == null || value.isEmpty) {
+      return 'Kata sandi tidak boleh kosong!';
+    }
+    if (value.length < minLength) {
+      return 'Kata sandi minimal $minLength karakter!';
+    }
+    return null;
+  }
+
+  /// Konfirmasi kata sandi: wajib diisi dan harus sama dengan [original].
+  static String? confirmPassword(String? value, String? original) {
+    if (value == null || value.isEmpty) {
+      return 'Konfirmasi kata sandi tidak boleh kosong!';
+    }
+    if (value != original) {
+      return 'Konfirmasi kata sandi tidak sama!';
+    }
+    return null;
+  }
 }
