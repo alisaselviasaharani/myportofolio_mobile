@@ -99,7 +99,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
         fillColor: Colors.white.withValues(alpha: 0.72),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 16,
+          vertical: 12,
         ),
         border: _border(border),
         enabledBorder: _border(border),
@@ -138,7 +138,7 @@ class AuthButton extends StatelessWidget {
     return Opacity(
       opacity: enabled ? 1 : 0.75,
       child: Container(
-        height: 56,
+        height: 52,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [AuthColors.purpleStart, AuthColors.purpleEnd],
@@ -180,7 +180,7 @@ class AuthButton extends StatelessWidget {
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
-                            fontSize: 19,
+                            fontSize: 18,
                           ),
                         ),
                       ],
@@ -323,8 +323,8 @@ class SocialCircleButton extends StatelessWidget {
           customBorder: const CircleBorder(),
           onTap: onTap,
           child: SizedBox(
-            width: 60,
-            height: 60,
+            width: 54,
+            height: 54,
             child: Center(child: child),
           ),
         ),

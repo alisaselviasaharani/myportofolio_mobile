@@ -45,7 +45,7 @@ class AuthScaffold extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _header(),
-        const SizedBox(height: 26),
+        const SizedBox(height: 20),
         ...children,
       ],
     );
@@ -59,19 +59,48 @@ class AuthScaffold extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // Gambar didorong 14% ke bawah layar agar karang hanya tampak kecil
+          // di dasar, lalu diberi kabut putih tipis agar warnanya lebih pucat.
           Positioned.fill(
-            child: Image.asset(
-              backgroundAsset,
-              fit: BoxFit.cover,
-              alignment: Alignment.bottomCenter,
-              errorBuilder: (context, error, stackTrace) => const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF8EE3F7), Color(0xFFC9F4FC)],
+            child: LayoutBuilder(
+              builder: (context, constraints) => Stack(
+                fit: StackFit.expand,
+                children: [
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: -constraints.maxHeight * 0.14,
+                    child: Image.asset(
+                      backgroundAsset,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.bottomCenter,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Color(0xFF8EE3F7), Color(0xFFC9F4FC)],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0x40FFFFFF),
+                          Color(0x59FFFFFF),
+                          Color(0x59FFFFFF),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -96,7 +125,7 @@ class AuthScaffold extends StatelessWidget {
                   child: SingleChildScrollView(
                     keyboardDismissBehavior:
                         ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: EdgeInsets.fromLTRB(24, 8, 24, 140 + keyboard),
+                    padding: EdgeInsets.fromLTRB(24, 8, 24, 100 + keyboard),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 480),
@@ -115,13 +144,13 @@ class AuthScaffold extends StatelessWidget {
 
   Widget _header() {
     const titleStyle = TextStyle(
-      fontSize: 34,
+      fontSize: 30,
       height: 1.1,
       fontWeight: FontWeight.w800,
       color: OceanColors.navy,
     );
     const subtitleStyle = TextStyle(
-      fontSize: 15,
+      fontSize: 14,
       height: 1.35,
       fontWeight: FontWeight.w600,
       color: OceanColors.navy,
