@@ -216,10 +216,7 @@ class _SummaryRow extends StatelessWidget {
               children: [
                 Text(
                   item.label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: OceanColors.navy,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: OceanColors.navy),
                 ),
                 Text(
                   item.value.isEmpty ? '-' : item.value,

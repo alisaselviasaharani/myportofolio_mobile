@@ -65,7 +65,8 @@ class SkillsPage extends StatelessWidget {
                       mascotWidth: 118,
                       sparkles: true,
                       title: 'My Skills',
-                      subtitle: 'Kumpulan kemampuan yang saya miliki '
+                      subtitle:
+                          'Kumpulan kemampuan yang saya miliki '
                           'dan terus saya kembangkan.',
                       decoration: ClownfishMascot(width: 48),
                     ),

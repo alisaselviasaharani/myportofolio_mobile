@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 
 /// Tombol aksi berbentuk kartu pastel untuk satu [ItemHomepage].
 ///
@@ -36,7 +37,13 @@ class ItemCard extends StatelessWidget {
         ),
         child: InkWell(
           // Aksi ketika kartu ditekan oleh pengguna.
-          onTap: () {
+          onTap: () async {
+            // Kartu dengan aksi khusus (Login/Logout) menangani dirinya sendiri.
+            final customTap = item.onTap;
+            if (customTap != null) {
+              await customTap(context);
+              return;
+            }
             // Menampilkan SnackBar dengan pesan interaktif.
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
@@ -48,10 +55,12 @@ class ItemCard extends StatelessWidget {
             // Navigate ke halaman tujuan milik item (jika ada).
             final pageBuilder = item.pageBuilder;
             if (pageBuilder != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: pageBuilder),
-              );
+              // Route guard: halaman terproteksi butuh login lebih dulu.
+              if (item.requiresAuth) {
+                final loggedIn = await ensureLoggedIn(context);
+                if (!loggedIn || !context.mounted) return;
+              }
+              Navigator.push(context, MaterialPageRoute(builder: pageBuilder));
             }
           },
           child: Padding(

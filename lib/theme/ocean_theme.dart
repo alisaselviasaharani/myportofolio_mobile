@@ -174,7 +174,10 @@ class OceanAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Expanded(
                   child: centerTitle
                       ? Center(child: titleText)
-                      : Align(alignment: Alignment.centerLeft, child: titleText),
+                      : Align(
+                          alignment: Alignment.centerLeft,
+                          child: titleText,
+                        ),
                 ),
                 if (actions != null)
                   ...actions!

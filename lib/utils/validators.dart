@@ -38,7 +38,8 @@ class FormValidators {
       return '$fieldName maksimal $maxLength karakter!';
     }
     final uri = Uri.tryParse(text);
-    final isValid = uri != null &&
+    final isValid =
+        uri != null &&
         (uri.scheme == 'http' || uri.scheme == 'https') &&
         uri.host.contains('.') &&
         !text.contains(' ');
@@ -46,6 +47,19 @@ class FormValidators {
       return '$fieldName harus berupa URL valid (diawali http:// atau https://)!';
     }
     return null;
+  }
+
+  /// URL wajib: tidak boleh kosong, lalu harus lolos aturan [optionalUrl].
+  static String? requiredUrl(
+    String? value, {
+    required String fieldName,
+    int maxLength = 500,
+  }) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return '$fieldName tidak boleh kosong!';
+    }
+    return optionalUrl(value, fieldName: fieldName, maxLength: maxLength);
   }
 
   /// Email wajib: tidak boleh kosong dan harus berformat `nama@domain.tld`.

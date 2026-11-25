@@ -1,8 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
+import 'package:provider/provider.dart';
 
 final _positionField = find.byKey(const Key('positionField'));
 final _companyField = find.byKey(const Key('companyField'));
@@ -15,14 +22,35 @@ Future<void> _pumpForm(WidgetTester tester) async {
   tester.view.physicalSize = const Size(800, 2400);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(const MaterialApp(home: ExperienceFormPage()));
+  // Server palsu: membalas 201 dengan data yang dikirim + id.
+  final client = ApiClient(
+    baseUrl: 'http://test',
+    client: MockClient((request) async {
+      expect(request.headers['Authorization'], 'Token tok');
+      final body = jsonDecode(request.body) as Map<String, dynamic>;
+      return http.Response(jsonEncode({...body, 'id': 'abc'}), 201);
+    }),
+  );
+  await tester.pumpWidget(
+    MultiProvider(
+      providers: [
+        Provider.value(value: client),
+        // Sudah login, jadi guard langsung lolos.
+        ChangeNotifierProvider(
+          create: (_) => AuthState(client, initialToken: 'tok'),
+        ),
+      ],
+      child: const MaterialApp(home: ExperienceFormPage()),
+    ),
+  );
 }
 
 void main() {
   setUp(() => PortfolioStore.instance.clear());
 
-  testWidgets('Simpan dengan input kosong menampilkan error tiap kolom',
-      (tester) async {
+  testWidgets('Simpan dengan input kosong menampilkan error tiap kolom', (
+    tester,
+  ) async {
     await _pumpForm(tester);
 
     await tester.tap(_saveButton);
@@ -57,8 +85,9 @@ void main() {
     expect(find.byType(Dialog), findsNothing);
   });
 
-  testWidgets('Input valid menampilkan dialog ringkasan, OK mereset form',
-      (tester) async {
+  testWidgets('Input valid menampilkan dialog ringkasan, OK mereset form', (
+    tester,
+  ) async {
     await _pumpForm(tester);
 
     await tester.enterText(_positionField, 'Backend Intern');

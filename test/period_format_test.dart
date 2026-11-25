@@ -15,10 +15,12 @@ void main() {
       expect(formatPeriod(start, null), '5 Nov 2026');
     });
 
-    test('tanggal selesai sama dengan mulai hanya menampilkan satu tanggal',
-        () {
-      expect(formatPeriod(start, DateTime(2026, 11, 5, 18)), '5 Nov 2026');
-    });
+    test(
+      'tanggal selesai sama dengan mulai hanya menampilkan satu tanggal',
+      () {
+        expect(formatPeriod(start, DateTime(2026, 11, 5, 18)), '5 Nov 2026');
+      },
+    );
 
     test('rentang tanggal digabung dengan tanda hubung', () {
       expect(

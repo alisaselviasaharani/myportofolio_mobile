@@ -14,8 +14,7 @@ class PortfolioStore {
   static final PortfolioStore instance = PortfolioStore._();
 
   final ValueNotifier<List<Education>> educations = ValueNotifier(const []);
-  final ValueNotifier<List<Achievement>> achievements =
-      ValueNotifier(const []);
+  final ValueNotifier<List<Achievement>> achievements = ValueNotifier(const []);
 
   /// Jumlah experience yang sudah disimpan (model Experience belum dibuat).
   final ValueNotifier<int> experienceCount = ValueNotifier(0);

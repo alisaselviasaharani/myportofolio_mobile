@@ -6,14 +6,18 @@ import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:myportofolio_mobile/screens/skills_page.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:myportofolio_mobile/widgets/experience_card.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/mascots.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
+import 'package:provider/provider.dart';
 
 /// Halaman utama aplikasi MyPortfolio.
 ///
@@ -39,6 +43,8 @@ class MyHomePage extends StatelessWidget {
       OceanColors.cardPurple,
       iconColor: const Color(0xFF4A56C4),
       pageBuilder: (context) => const ExperienceFormPage(),
+      // Hanya bisa dibuka setelah login (route guard).
+      requiresAuth: true,
     ),
     ItemHomepage(
       'Add Certification',
@@ -46,6 +52,13 @@ class MyHomePage extends StatelessWidget {
       OceanColors.cardPink,
       iconColor: const Color(0xFF9A3FC4),
       pageBuilder: (context) => const AchievementFormPage(),
+    ),
+    ItemHomepage(
+      'My Experience',
+      Icons.work_history,
+      OceanColors.cardYellow,
+      iconColor: const Color(0xFF3F3DA8),
+      pageBuilder: (context) => const ExperienceListScreen(),
     ),
     ItemHomepage(
       'My Skills',
@@ -113,9 +126,11 @@ class MyHomePage extends StatelessWidget {
                         childAspectRatio: 1.8,
                         // shrinkWrap agar ukuran kisi menyesuaikan tinggi anak.
                         shrinkWrap: true,
-                        children: items.map((ItemHomepage item) {
-                          return ItemCard(item);
-                        }).toList(),
+                        children: [
+                          for (final item in items) ItemCard(item),
+                          // Kartu Login/Logout mengikuti state login.
+                          const _AuthCard(),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 18.0),
@@ -126,6 +141,49 @@ class MyHomePage extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Kartu Login (jika belum login) atau Logout (jika sudah login).
+///
+/// Memakai `context.watch` sehingga berganti otomatis saat state berubah.
+class _AuthCard extends StatelessWidget {
+  const _AuthCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final isLoggedIn = context.watch<AuthState>().isLoggedIn;
+    if (isLoggedIn) {
+      return ItemCard(
+        ItemHomepage(
+          'Logout',
+          Icons.logout,
+          OceanColors.cardPink,
+          iconColor: const Color(0xFF9A3FC4),
+          onTap: (context) async {
+            final messenger = ScaffoldMessenger.of(context);
+            await context.read<AuthState>().logout();
+            messenger
+              ..hideCurrentSnackBar()
+              ..showSnackBar(const SnackBar(content: Text('Berhasil logout.')));
+          },
+        ),
+      );
+    }
+    return ItemCard(
+      ItemHomepage(
+        'Login',
+        Icons.login,
+        OceanColors.cardLavender,
+        iconColor: const Color(0xFF6C4FD8),
+        onTap: (context) async {
+          final loggedIn = await ensureLoggedIn(context);
+          if (loggedIn && context.mounted) {
+            showInfoSnackBar(context, 'Berhasil login.');
+          }
+        },
       ),
     );
   }
@@ -415,11 +473,19 @@ class ItemHomepage {
   /// Pembuat halaman tujuan. `null` berarti kartu hanya menampilkan SnackBar.
   final WidgetBuilder? pageBuilder;
 
+  /// `true` jika halaman tujuan hanya boleh dibuka setelah login.
+  final bool requiresAuth;
+
+  /// Aksi khusus (menggantikan SnackBar + navigasi bawaan), mis. Login/Logout.
+  final Future<void> Function(BuildContext context)? onTap;
+
   ItemHomepage(
     this.name,
     this.icon,
     this.color, {
     this.iconColor = OceanColors.navy,
     this.pageBuilder,
+    this.requiresAuth = false,
+    this.onTap,
   });
 }

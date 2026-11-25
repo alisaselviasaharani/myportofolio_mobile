@@ -37,8 +37,9 @@ Future<void> _fillRequired(WidgetTester tester) async {
 void main() {
   setUp(() => PortfolioStore.instance.clear());
 
-  testWidgets('Simpan dengan input kosong menampilkan error tiap kolom',
-      (tester) async {
+  testWidgets('Simpan dengan input kosong menampilkan error tiap kolom', (
+    tester,
+  ) async {
     await _pumpForm(tester);
 
     await tester.tap(_saveButton);
@@ -83,8 +84,9 @@ void main() {
     expect(find.byType(Dialog), findsNothing);
   });
 
-  testWidgets('Input valid menampilkan dialog ringkasan, OK mereset form',
-      (tester) async {
+  testWidgets('Input valid menampilkan dialog ringkasan, OK mereset form', (
+    tester,
+  ) async {
     await _pumpForm(tester);
 
     await _fillRequired(tester);

@@ -4,11 +4,15 @@ import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:myportofolio_mobile/screens/skills_page.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:myportofolio_mobile/widgets/illustrations.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
+import 'package:provider/provider.dart';
 
 /// Tujuan pada drawer; dipakai untuk menandai item yang sedang aktif.
 enum DrawerDestination {
@@ -16,6 +20,7 @@ enum DrawerDestination {
   education,
   experience,
   certification,
+  experienceList,
   skills,
   contact,
 }
@@ -43,8 +48,33 @@ class LeftDrawer extends StatelessWidget {
     Navigator.pop(context);
   }
 
+  /// Add Experience dilindungi login: jika belum login, buka LoginScreen dulu.
+  Future<void> _goProtected(BuildContext context, Widget page) async {
+    final loggedIn = await ensureLoggedIn(context);
+    if (!loggedIn || !context.mounted) return;
+    _go(context, page);
+  }
+
+  /// Membuka LoginScreen; jika berhasil, drawer ditutup.
+  Future<void> _login(BuildContext context) async {
+    final loggedIn = await ensureLoggedIn(context);
+    if (!loggedIn || !context.mounted) return;
+    showInfoSnackBar(context, 'Berhasil login.');
+    Navigator.pop(context);
+  }
+
+  /// Logout: cabut token di server (apa pun hasilnya sesi lokal dibersihkan).
+  Future<void> _logout(BuildContext context) async {
+    await context.read<AuthState>().logout();
+    if (!context.mounted) return;
+    showInfoSnackBar(context, 'Berhasil logout.');
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Dibaca reaktif: tile Login/Logout berganti saat state login berubah.
+    final isLoggedIn = context.watch<AuthState>().isLoggedIn;
     return Drawer(
       backgroundColor: const Color(0xFFE6F6FC),
       width: 310,
@@ -70,10 +100,17 @@ class LeftDrawer extends StatelessWidget {
                   onTap: () => _go(context, const EducationFormPage()),
                 ),
                 _DrawerTile(
+                  icon: Icons.work_history_outlined,
+                  title: 'My Experience',
+                  selected: selected == DrawerDestination.experienceList,
+                  onTap: () => _go(context, const ExperienceListScreen()),
+                ),
+                _DrawerTile(
                   icon: Icons.work_outline,
                   title: 'Add Experience',
                   selected: selected == DrawerDestination.experience,
-                  onTap: () => _go(context, const ExperienceFormPage()),
+                  onTap: () =>
+                      _goProtected(context, const ExperienceFormPage()),
                 ),
                 _DrawerTile(
                   icon: Icons.workspace_premium_outlined,
@@ -109,12 +146,20 @@ class LeftDrawer extends StatelessWidget {
                   selected: false,
                   onTap: () => _comingSoon(context, 'Settings'),
                 ),
-                _DrawerTile(
-                  icon: Icons.logout,
-                  title: 'Logout',
-                  selected: false,
-                  onTap: () => _comingSoon(context, 'Logout'),
-                ),
+                if (isLoggedIn)
+                  _DrawerTile(
+                    icon: Icons.logout,
+                    title: 'Logout',
+                    selected: false,
+                    onTap: () => _logout(context),
+                  )
+                else
+                  _DrawerTile(
+                    icon: Icons.login,
+                    title: 'Login',
+                    selected: false,
+                    onTap: () => _login(context),
+                  ),
                 const SizedBox(height: 120),
               ],
             ),

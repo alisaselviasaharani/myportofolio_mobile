@@ -165,120 +165,122 @@ class _EducationFormPageState extends State<EducationFormPage> {
                     ),
                     FormCard(
                       children: [
-                    // === Institusi ===
-                    LabeledField(
-                      label: 'Institution',
-                      isRequired: true,
-                      child: TextFormField(
-                        key: const Key('institutionField'),
-                        controller: _institutionController,
-                        maxLength: _institutionMaxLength,
-                        textInputAction: TextInputAction.next,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: oceanInputDecoration(
-                          hint: 'Contoh: Universitas Indonesia',
-                          prefixIcon: const Icon(Icons.account_balance_outlined),
-                        ),
-                        validator: (value) => FormValidators.requiredText(
-                          value,
-                          fieldName: 'Institusi',
-                          maxLength: _institutionMaxLength,
-                        ),
-                      ),
-                    ),
-                    // === Jenjang ===
-                    LabeledField(
-                      label: 'Degree',
-                      isRequired: true,
-                      child: DropdownButtonFormField<DegreeLevel>(
-                        key: const Key('levelField'),
-                        decoration: oceanInputDecoration(
-                          prefixIcon: const Icon(Icons.school_outlined),
-                        ),
-                        // Nilai awal konstan agar reset() kembali ke default.
-                        initialValue: _defaultLevel,
-                        items: DegreeLevel.values
-                            .map(
-                              (level) => DropdownMenuItem(
-                                value: level,
-                                child: Text(level.label),
+                        // === Institusi ===
+                        LabeledField(
+                          label: 'Institution',
+                          isRequired: true,
+                          child: TextFormField(
+                            key: const Key('institutionField'),
+                            controller: _institutionController,
+                            maxLength: _institutionMaxLength,
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: oceanInputDecoration(
+                              hint: 'Contoh: Universitas Indonesia',
+                              prefixIcon: const Icon(
+                                Icons.account_balance_outlined,
                               ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() => _level = value);
-                          }
-                        },
-                      ),
-                    ),
-                    // === Jurusan ===
-                    LabeledField(
-                      label: 'Major',
-                      isRequired: true,
-                      child: TextFormField(
-                        key: const Key('majorField'),
-                        controller: _majorController,
-                        maxLength: _majorMaxLength,
-                        textInputAction: TextInputAction.next,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: oceanInputDecoration(
-                          hint: 'Contoh: Ilmu Komputer',
-                          prefixIcon: const Icon(Icons.menu_book_outlined),
+                            ),
+                            validator: (value) => FormValidators.requiredText(
+                              value,
+                              fieldName: 'Institusi',
+                              maxLength: _institutionMaxLength,
+                            ),
+                          ),
                         ),
-                        validator: (value) => FormValidators.requiredText(
-                          value,
-                          fieldName: 'Jurusan',
-                          maxLength: _majorMaxLength,
+                        // === Jenjang ===
+                        LabeledField(
+                          label: 'Degree',
+                          isRequired: true,
+                          child: DropdownButtonFormField<DegreeLevel>(
+                            key: const Key('levelField'),
+                            decoration: oceanInputDecoration(
+                              prefixIcon: const Icon(Icons.school_outlined),
+                            ),
+                            // Nilai awal konstan agar reset() kembali ke default.
+                            initialValue: _defaultLevel,
+                            items: DegreeLevel.values
+                                .map(
+                                  (level) => DropdownMenuItem(
+                                    value: level,
+                                    child: Text(level.label),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() => _level = value);
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                    ),
-                    // === Tanggal Mulai ===
-                    DateFormField(
-                      key: const Key('startDateField'),
-                      controller: _startDateController,
-                      label: 'Start Date',
-                      isRequired: true,
-                      onTap: () => _pickDate(isStart: true),
-                      validator: (_) => FormValidators.requiredDate(
-                        _startDate,
-                        fieldName: 'Tanggal mulai',
-                      ),
-                    ),
-                    // === Tanggal Selesai (wajib, tidak sebelum mulai) ===
-                    DateFormField(
-                      key: const Key('endDateField'),
-                      controller: _endDateController,
-                      label: 'End Date',
-                      isRequired: true,
-                      onTap: () => _pickDate(isStart: false),
-                      validator: (_) =>
-                          FormValidators.requiredDate(
-                            _endDate,
-                            fieldName: 'Tanggal selesai',
-                          ) ??
-                          FormValidators.dateOrder(_startDate, _endDate),
-                    ),
-                    // === Website (opsional) ===
-                    LabeledField(
-                      label: 'Website (optional)',
-                      child: TextFormField(
-                        key: const Key('websiteField'),
-                        controller: _websiteController,
-                        maxLength: _websiteMaxLength,
-                        keyboardType: TextInputType.url,
-                        textInputAction: TextInputAction.done,
-                        decoration: oceanInputDecoration(
-                          hint: 'https://www.ui.ac.id',
-                          prefixIcon: const Icon(Icons.link),
+                        // === Jurusan ===
+                        LabeledField(
+                          label: 'Major',
+                          isRequired: true,
+                          child: TextFormField(
+                            key: const Key('majorField'),
+                            controller: _majorController,
+                            maxLength: _majorMaxLength,
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: oceanInputDecoration(
+                              hint: 'Contoh: Ilmu Komputer',
+                              prefixIcon: const Icon(Icons.menu_book_outlined),
+                            ),
+                            validator: (value) => FormValidators.requiredText(
+                              value,
+                              fieldName: 'Jurusan',
+                              maxLength: _majorMaxLength,
+                            ),
+                          ),
                         ),
-                        validator: (value) => FormValidators.optionalUrl(
-                          value,
-                          fieldName: 'URL website',
-                          maxLength: _websiteMaxLength,
+                        // === Tanggal Mulai ===
+                        DateFormField(
+                          key: const Key('startDateField'),
+                          controller: _startDateController,
+                          label: 'Start Date',
+                          isRequired: true,
+                          onTap: () => _pickDate(isStart: true),
+                          validator: (_) => FormValidators.requiredDate(
+                            _startDate,
+                            fieldName: 'Tanggal mulai',
+                          ),
                         ),
-                      ),
-                    ),
+                        // === Tanggal Selesai (wajib, tidak sebelum mulai) ===
+                        DateFormField(
+                          key: const Key('endDateField'),
+                          controller: _endDateController,
+                          label: 'End Date',
+                          isRequired: true,
+                          onTap: () => _pickDate(isStart: false),
+                          validator: (_) =>
+                              FormValidators.requiredDate(
+                                _endDate,
+                                fieldName: 'Tanggal selesai',
+                              ) ??
+                              FormValidators.dateOrder(_startDate, _endDate),
+                        ),
+                        // === Website (opsional) ===
+                        LabeledField(
+                          label: 'Website (optional)',
+                          child: TextFormField(
+                            key: const Key('websiteField'),
+                            controller: _websiteController,
+                            maxLength: _websiteMaxLength,
+                            keyboardType: TextInputType.url,
+                            textInputAction: TextInputAction.done,
+                            decoration: oceanInputDecoration(
+                              hint: 'https://www.ui.ac.id',
+                              prefixIcon: const Icon(Icons.link),
+                            ),
+                            validator: (value) => FormValidators.optionalUrl(
+                              value,
+                              fieldName: 'URL website',
+                              maxLength: _websiteMaxLength,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     // === Tombol Simpan ===

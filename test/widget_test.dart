@@ -7,9 +7,13 @@ import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/screens/login_screen.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/skills_page.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
+import 'package:provider/provider.dart';
 
 /// Kartu aksi di beranda beserta halaman tujuannya.
 const List<(String, Type)> _cards = [
@@ -19,6 +23,12 @@ const List<(String, Type)> _cards = [
   ('My Skills', SkillsPage),
   ('Contact Me', ContactPage),
 ];
+
+/// Kartu yang langsung membuka halaman (Add Experience dilindungi login,
+/// jadi dites terpisah).
+final List<(String, Type)> _openCards = _cards
+    .where((card) => card.$2 != ExperienceFormPage)
+    .toList();
 
 /// Layar tinggi agar semua kartu dan tile drawer terlihat tanpa menggulir.
 void _useTallScreen(WidgetTester tester) {
@@ -34,10 +44,20 @@ Future<void> _openDrawer(WidgetTester tester) async {
 }
 
 /// Teks di dalam drawer (judul yang sama juga ada di kartu beranda).
-Finder _inDrawer(String text) => find.descendant(
-      of: find.byType(Drawer),
-      matching: find.text(text),
-    );
+Finder _inDrawer(String text) =>
+    find.descendant(of: find.byType(Drawer), matching: find.text(text));
+
+/// Membungkus [child] dengan provider yang dibutuhkan MyHomePage dan drawer.
+Widget _withProviders(Widget child) {
+  final apiClient = ApiClient();
+  return MultiProvider(
+    providers: [
+      Provider.value(value: apiClient),
+      ChangeNotifierProvider(create: (_) => AuthState(apiClient)),
+    ],
+    child: child,
+  );
+}
 
 void main() {
   setUp(() => PortfolioStore.instance.clear());
@@ -46,7 +66,7 @@ void main() {
     WidgetTester tester,
   ) async {
     _useTallScreen(tester);
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(apiClient: ApiClient()));
 
     // Judul AppBar dan label bagian "My Portfolio".
     expect(find.text('My Portfolio'), findsNWidgets(2));
@@ -64,7 +84,7 @@ void main() {
       WidgetTester tester,
     ) async {
       _useTallScreen(tester);
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(MyApp(apiClient: ApiClient()));
 
       await tester.tap(find.text(name));
       await tester.pump();
@@ -73,12 +93,12 @@ void main() {
     });
   }
 
-  for (final (name, page) in _cards) {
+  for (final (name, page) in _openCards) {
     testWidgets('Kartu $name membuka form dan bisa kembali', (
       WidgetTester tester,
     ) async {
       _useTallScreen(tester);
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(MyApp(apiClient: ApiClient()));
 
       await tester.tap(find.text(name));
       await tester.pumpAndSettle();
@@ -92,12 +112,12 @@ void main() {
     });
   }
 
-  for (final (name, page) in _cards) {
+  for (final (name, page) in _openCards) {
     testWidgets('Drawer membuka $name dan Home kembali ke utama', (
       WidgetTester tester,
     ) async {
       _useTallScreen(tester);
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(MyApp(apiClient: ApiClient()));
 
       await _openDrawer(tester);
       await tester.tap(_inDrawer(name));
@@ -113,6 +133,32 @@ void main() {
     });
   }
 
+  testWidgets('Kartu Add Experience mengarah ke Login jika belum login', (
+    WidgetTester tester,
+  ) async {
+    _useTallScreen(tester);
+    await tester.pumpWidget(MyApp(apiClient: ApiClient()));
+
+    await tester.tap(find.text('Add Experience'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(ExperienceFormPage), findsNothing);
+  });
+
+  testWidgets('Drawer Add Experience mengarah ke Login jika belum login', (
+    WidgetTester tester,
+  ) async {
+    _useTallScreen(tester);
+    await tester.pumpWidget(MyApp(apiClient: ApiClient()));
+
+    await _openDrawer(tester);
+    await tester.tap(_inDrawer('Add Experience'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+  });
+
   testWidgets('Bagian My Portfolio menampilkan jumlah item dari store', (
     WidgetTester tester,
   ) async {
@@ -126,7 +172,7 @@ void main() {
         period: '1 Sep 2023 - 1 Jun 2027',
       ),
     );
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(apiClient: ApiClient()));
 
     expect(find.text('Education'), findsOneWidget);
     expect(find.text('1 item'), findsOneWidget);
@@ -202,10 +248,12 @@ void main() {
     Future<void> pumpBar(WidgetTester tester) async {
       _useTallScreen(tester);
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SizedBox.expand(),
-            bottomNavigationBar: OceanBottomBar(),
+        _withProviders(
+          const MaterialApp(
+            home: Scaffold(
+              body: SizedBox.expand(),
+              bottomNavigationBar: OceanBottomBar(),
+            ),
           ),
         ),
       );

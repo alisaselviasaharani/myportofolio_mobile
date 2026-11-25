@@ -85,7 +85,8 @@ class _JellyfishPainter extends CustomPainter {
     );
 
     // Wajah: pipi, mata, senyum.
-    final cheek = Paint()..color = const Color(0xFFFF8FB5).withValues(alpha: 0.6);
+    final cheek = Paint()
+      ..color = const Color(0xFFFF8FB5).withValues(alpha: 0.6);
     canvas.drawOval(const Rect.fromLTWH(24, 46, 14, 9), cheek);
     canvas.drawOval(const Rect.fromLTWH(72, 46, 14, 9), cheek);
     final eye = Paint()..color = const Color(0xFF1B1B3A);
@@ -271,8 +272,14 @@ class _SeaweedPainter extends CustomPainter {
         ..strokeWidth = s.w;
       final path = Path()
         ..moveTo(s.x, 70)
-        ..cubicTo(s.x - 9, 70 - s.h * 0.35, s.x + 9, 70 - s.h * 0.7,
-            s.x, 70 - s.h);
+        ..cubicTo(
+          s.x - 9,
+          70 - s.h * 0.35,
+          s.x + 9,
+          70 - s.h * 0.7,
+          s.x,
+          70 - s.h,
+        );
       canvas.drawPath(path, stem);
     }
     // Karang oranye kecil di sebelah kanan.

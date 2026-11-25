@@ -22,10 +22,6 @@ class OceanAvatarAction extends StatelessWidget {
 }
 
 /// Banner di atas halaman: maskot GIF di kiri, judul dan subjudul di kanan,
-/// plus hiasan opsional ([decoration]) di pojok kanan atas.
-///
-/// Dengan [sparkles] `true`, judul diberi kilau kuning di kedua sisi dan
-/// diratakan ke tengah; jika tidak, judul rata kiri.
 class HeroBanner extends StatelessWidget {
   const HeroBanner({
     super.key,
@@ -52,8 +48,9 @@ class HeroBanner extends StatelessWidget {
       color: Color(0xFFFFC928),
       size: 22,
     );
-    final align =
-        sparkles ? CrossAxisAlignment.center : CrossAxisAlignment.start;
+    final align = sparkles
+        ? CrossAxisAlignment.center
+        : CrossAxisAlignment.start;
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -86,8 +83,7 @@ class HeroBanner extends StatelessWidget {
             children: [
               FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment:
-                    sparkles ? Alignment.center : Alignment.centerLeft,
+                alignment: sparkles ? Alignment.center : Alignment.centerLeft,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -133,7 +129,8 @@ class HeroBanner extends StatelessWidget {
             ),
           ),
         ),
-        if (decoration != null) Positioned(right: 10, top: -14, child: decoration!),
+        if (decoration != null)
+          Positioned(right: 10, top: -14, child: decoration!),
       ],
     );
   }

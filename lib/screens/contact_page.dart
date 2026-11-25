@@ -98,7 +98,8 @@ class _ContactPageState extends State<ContactPage> {
                       mascotAsset: 'assets/images/nailong_swim.gif',
                       mascotWidth: 140,
                       title: 'Contact Me',
-                      subtitle: 'Mari terhubung dan berkolaborasi! '
+                      subtitle:
+                          'Mari terhubung dan berkolaborasi! '
                           'Saya senang berdiskusi dengan Anda. 💙',
                       decoration: SeahorseMascot(height: 58),
                     ),
@@ -253,9 +254,7 @@ class _ContactLinks extends StatelessWidget {
     return GlassPanel(
       padding: const EdgeInsets.all(8),
       child: Column(
-        children: [
-          for (final item in _items) _ContactRow(item: item),
-        ],
+        children: [for (final item in _items) _ContactRow(item: item)],
       ),
     );
   }

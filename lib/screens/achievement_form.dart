@@ -170,141 +170,143 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                     ),
                     FormCard(
                       children: [
-                    // === Nama Penghargaan ===
-                    LabeledField(
-                      label: 'Nama Penghargaan',
-                      isRequired: true,
-                      child: TextFormField(
-                        key: const Key('titleField'),
-                        controller: _titleController,
-                        maxLength: _titleMaxLength,
-                        textInputAction: TextInputAction.next,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: oceanInputDecoration(
-                          hint: 'Contoh: Juara 1 Mencintai Diri Sendiri',
-                          prefixIcon: const Icon(Icons.emoji_events_outlined),
-                        ),
-                        validator: (value) => FormValidators.requiredText(
-                          value,
-                          fieldName: 'Nama penghargaan',
-                          maxLength: _titleMaxLength,
-                        ),
-                      ),
-                    ),
-                    // === Deskripsi ===
-                    LabeledField(
-                      label: 'Deskripsi Penghargaan',
-                      isRequired: true,
-                      child: TextFormField(
-                        key: const Key('descriptionField'),
-                        controller: _descriptionController,
-                        minLines: 3,
-                        maxLines: 5,
-                        maxLength: _descriptionMaxLength,
-                        keyboardType: TextInputType.multiline,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: oceanInputDecoration(
-                          hint: 'Ceritakan penghargaanmu',
-                          showCounter: true,
-                        ),
-                        validator: (value) => FormValidators.requiredText(
-                          value,
-                          fieldName: 'Deskripsi penghargaan',
-                          maxLength: _descriptionMaxLength,
-                        ),
-                      ),
-                    ),
-                    // === Kategori ===
-                    LabeledField(
-                      label: 'Kategori Penghargaan',
-                      isRequired: true,
-                      child: DropdownButtonFormField<AchievementCategory>(
-                        key: const Key('categoryField'),
-                        decoration: oceanInputDecoration(
-                          prefixIcon: const Icon(Icons.category_outlined),
-                        ),
-                        // Nilai awal konstan agar reset() kembali ke default.
-                        initialValue: _defaultCategory,
-                        items: AchievementCategory.values
-                            .map(
-                              (category) => DropdownMenuItem(
-                                value: category,
-                                child: Text(category.label),
+                        // === Nama Penghargaan ===
+                        LabeledField(
+                          label: 'Nama Penghargaan',
+                          isRequired: true,
+                          child: TextFormField(
+                            key: const Key('titleField'),
+                            controller: _titleController,
+                            maxLength: _titleMaxLength,
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: oceanInputDecoration(
+                              hint: 'Contoh: Juara 1 Mencintai Diri Sendiri',
+                              prefixIcon: const Icon(
+                                Icons.emoji_events_outlined,
                               ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() => _category = value);
-                          }
-                        },
-                      ),
-                    ),
-                    // === Tanggal Mulai ===
-                    DateFormField(
-                      key: const Key('startDateField'),
-                      controller: _startDateController,
-                      label: 'Tanggal Mulai',
-                      isRequired: true,
-                      onTap: () => _pickDate(isStart: true),
-                      validator: (_) => FormValidators.requiredDate(
-                        _startDate,
-                        fieldName: 'Tanggal mulai',
-                      ),
-                    ),
-                    // === Tanggal Selesai (opsional) ===
-                    DateFormField(
-                      key: const Key('endDateField'),
-                      controller: _endDateController,
-                      label: 'Tanggal Selesai (opsional)',
-                      onTap: () => _pickDate(isStart: false),
-                      onClear: _endDate == null ? null : _clearEndDate,
-                      clearTooltip: 'Hapus tanggal selesai',
-                      validator: (_) =>
-                          FormValidators.dateOrder(_startDate, _endDate),
-                    ),
-                    // Pratinjau periode yang akan disimpan.
-                    if (_startDate != null)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: OceanColors.aqua.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Periode: ${formatPeriod(_startDate!, _endDate)}',
-                            style: const TextStyle(
-                              color: OceanColors.deep,
-                              fontWeight: FontWeight.w600,
+                            ),
+                            validator: (value) => FormValidators.requiredText(
+                              value,
+                              fieldName: 'Nama penghargaan',
+                              maxLength: _titleMaxLength,
                             ),
                           ),
                         ),
-                      ),
-                    // === URL Gambar (opsional) ===
-                    LabeledField(
-                      label: 'URL Gambar Penghargaan (opsional)',
-                      child: TextFormField(
-                        key: const Key('imageUrlField'),
-                        controller: _imageUrlController,
-                        maxLength: _imageUrlMaxLength,
-                        keyboardType: TextInputType.url,
-                        textInputAction: TextInputAction.done,
-                        decoration: oceanInputDecoration(
-                          hint: 'https://contoh.com/gambar.png',
-                          prefixIcon: const Icon(Icons.link),
+                        // === Deskripsi ===
+                        LabeledField(
+                          label: 'Deskripsi Penghargaan',
+                          isRequired: true,
+                          child: TextFormField(
+                            key: const Key('descriptionField'),
+                            controller: _descriptionController,
+                            minLines: 3,
+                            maxLines: 5,
+                            maxLength: _descriptionMaxLength,
+                            keyboardType: TextInputType.multiline,
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: oceanInputDecoration(
+                              hint: 'Ceritakan penghargaanmu',
+                              showCounter: true,
+                            ),
+                            validator: (value) => FormValidators.requiredText(
+                              value,
+                              fieldName: 'Deskripsi penghargaan',
+                              maxLength: _descriptionMaxLength,
+                            ),
+                          ),
                         ),
-                        validator: (value) => FormValidators.optionalUrl(
-                          value,
-                          fieldName: 'URL gambar',
-                          maxLength: _imageUrlMaxLength,
+                        // === Kategori ===
+                        LabeledField(
+                          label: 'Kategori Penghargaan',
+                          isRequired: true,
+                          child: DropdownButtonFormField<AchievementCategory>(
+                            key: const Key('categoryField'),
+                            decoration: oceanInputDecoration(
+                              prefixIcon: const Icon(Icons.category_outlined),
+                            ),
+                            // Nilai awal konstan agar reset() kembali ke default.
+                            initialValue: _defaultCategory,
+                            items: AchievementCategory.values
+                                .map(
+                                  (category) => DropdownMenuItem(
+                                    value: category,
+                                    child: Text(category.label),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() => _category = value);
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                    ),
+                        // === Tanggal Mulai ===
+                        DateFormField(
+                          key: const Key('startDateField'),
+                          controller: _startDateController,
+                          label: 'Tanggal Mulai',
+                          isRequired: true,
+                          onTap: () => _pickDate(isStart: true),
+                          validator: (_) => FormValidators.requiredDate(
+                            _startDate,
+                            fieldName: 'Tanggal mulai',
+                          ),
+                        ),
+                        // === Tanggal Selesai (opsional) ===
+                        DateFormField(
+                          key: const Key('endDateField'),
+                          controller: _endDateController,
+                          label: 'Tanggal Selesai (opsional)',
+                          onTap: () => _pickDate(isStart: false),
+                          onClear: _endDate == null ? null : _clearEndDate,
+                          clearTooltip: 'Hapus tanggal selesai',
+                          validator: (_) =>
+                              FormValidators.dateOrder(_startDate, _endDate),
+                        ),
+                        // Pratinjau periode yang akan disimpan.
+                        if (_startDate != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: OceanColors.aqua.withValues(alpha: 0.6),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'Periode: ${formatPeriod(_startDate!, _endDate)}',
+                                style: const TextStyle(
+                                  color: OceanColors.deep,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        // === URL Gambar (opsional) ===
+                        LabeledField(
+                          label: 'URL Gambar Penghargaan (opsional)',
+                          child: TextFormField(
+                            key: const Key('imageUrlField'),
+                            controller: _imageUrlController,
+                            maxLength: _imageUrlMaxLength,
+                            keyboardType: TextInputType.url,
+                            textInputAction: TextInputAction.done,
+                            decoration: oceanInputDecoration(
+                              hint: 'https://contoh.com/gambar.png',
+                              prefixIcon: const Icon(Icons.link),
+                            ),
+                            validator: (value) => FormValidators.optionalUrl(
+                              value,
+                              fieldName: 'URL gambar',
+                              maxLength: _imageUrlMaxLength,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     // === Tombol Simpan ===

@@ -449,11 +449,7 @@ class _CrabMascotState extends State<CrabMascot>
 }
 
 class _CrabPainter extends CustomPainter {
-  const _CrabPainter({
-    this.legPhase = 0,
-    this.clawPhase = 0,
-    this.energy = 0,
-  });
+  const _CrabPainter({this.legPhase = 0, this.clawPhase = 0, this.energy = 0});
 
   final double legPhase;
   final double clawPhase;

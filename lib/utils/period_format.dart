@@ -33,7 +33,8 @@ String formatPeriod(DateTime start, DateTime? end) {
   if (end == null) {
     return formatDate(start);
   }
-  final sameDay = start.year == end.year &&
+  final sameDay =
+      start.year == end.year &&
       start.month == end.month &&
       start.day == end.day;
   if (sameDay) {

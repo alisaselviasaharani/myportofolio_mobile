@@ -20,8 +20,10 @@ void main() {
 
     test('menerima teks biasa dan teks dengan spasi di tepi', () {
       expect(FormValidators.requiredText('Juara 1', fieldName: 'Nama'), isNull);
-      expect(FormValidators.requiredText('  Juara 1  ', fieldName: 'Nama'),
-          isNull);
+      expect(
+        FormValidators.requiredText('  Juara 1  ', fieldName: 'Nama'),
+        isNull,
+      );
     });
 
     test('menolak teks yang melebihi batas panjang', () {
@@ -45,7 +47,10 @@ void main() {
 
     test('menerima URL http dan https yang valid', () {
       expect(
-        FormValidators.optionalUrl('https://contoh.com/a.png', fieldName: 'URL'),
+        FormValidators.optionalUrl(
+          'https://contoh.com/a.png',
+          fieldName: 'URL',
+        ),
         isNull,
       );
       expect(
@@ -90,8 +95,10 @@ void main() {
         'Tanggal mulai harus dipilih!',
       );
       expect(
-        FormValidators.requiredDate(DateTime(2026, 11, 1),
-            fieldName: 'Tanggal mulai'),
+        FormValidators.requiredDate(
+          DateTime(2026, 11, 1),
+          fieldName: 'Tanggal mulai',
+        ),
         isNull,
       );
     });
@@ -114,7 +121,10 @@ void main() {
     });
 
     test('menerima tanggal yang sama dan tanggal sesudahnya', () {
-      expect(FormValidators.dateOrder(start, DateTime(2026, 11, 10, 23)), isNull);
+      expect(
+        FormValidators.dateOrder(start, DateTime(2026, 11, 10, 23)),
+        isNull,
+      );
       expect(FormValidators.dateOrder(start, DateTime(2027, 1, 1)), isNull);
     });
   });
