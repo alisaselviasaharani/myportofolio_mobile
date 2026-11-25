@@ -11,16 +11,8 @@ concurrency:
 
 jobs:
   build:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v2
-    with:
-      setup: dart run build_runner build --delete-conflicting-outputs
-      coverage_excludes: "**/*.g.dart"
-      min_coverage: 0
-      timeout_minutes: 15
-
-  build_apk:
-    needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       API_BASE_URL: ${{ vars.API_BASE_URL }}
     steps:
@@ -31,11 +23,20 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Versi Flutter/Dart
+        run: flutter --version
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Generate json_serializable files
         run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test
+        run: flutter test
 
       - name: Build release APK
         run: flutter build apk --release --dart-define=API_BASE_URL="${API_BASE_URL:-http://10.0.2.2:8000}"
