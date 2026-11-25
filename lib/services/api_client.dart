@@ -91,6 +91,70 @@ class ApiClient {
     _ensureSuccess(response);
   }
 
+  /// POST /api/v1/auth/register/ : membuat akun baru (publik).
+  ///
+  /// Backend Django perlu menyediakan endpoint ini; body-nya berisi
+  /// `full_name`, `email`, `username`, dan `password`.
+  Future<void> register({
+    required String fullName,
+    required String email,
+    required String username,
+    required String password,
+  }) async {
+    final response = await _client.post(
+      _uri('/api/v1/auth/register/'),
+      headers: const {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'full_name': fullName,
+        'email': email,
+        'username': username,
+        'password': password,
+      }),
+    );
+    _ensureSuccess(response);
+  }
+
+  /// POST /api/v1/auth/password-reset/ : meminta tautan atur ulang lewat email.
+  ///
+  /// Server sebaiknya selalu membalas sukses meski email tidak terdaftar,
+  /// agar tidak membocorkan daftar akun.
+  Future<void> requestPasswordReset(String email) async {
+    final response = await _client.post(
+      _uri('/api/v1/auth/password-reset/'),
+      headers: const {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({'email': email}),
+    );
+    _ensureSuccess(response);
+  }
+
+  /// POST /api/v1/auth/password-reset/confirm/ : menyimpan kata sandi baru
+  /// memakai `uid` dan `token` dari tautan di email.
+  Future<void> confirmPasswordReset({
+    required String uid,
+    required String token,
+    required String newPassword,
+  }) async {
+    final response = await _client.post(
+      _uri('/api/v1/auth/password-reset/confirm/'),
+      headers: const {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'uid': uid,
+        'token': token,
+        'new_password': newPassword,
+      }),
+    );
+    _ensureSuccess(response);
+  }
+
   void _ensureSuccess(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return;
