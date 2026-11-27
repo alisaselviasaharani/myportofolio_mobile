@@ -1,29 +1,23 @@
+import 'dart:ui';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
-import 'package:myportofolio_mobile/utils/snackbar.dart';
 
-/// Bottom navigation bar bergaya laut: Beranda, Statistik, tombol tambah di
-/// tengah, Tersimpan, dan Profil.
-///
-/// Beranda membersihkan stack lalu membuka [MyHomePage]; tombol tengah
-/// membuka lembar pilihan form. Menu lain masih placeholder.
+enum OceanNavItem { home, portfolio, favorite, profile }
+
 class OceanBottomBar extends StatelessWidget {
-  const OceanBottomBar({super.key, this.homeSelected = false});
+  const OceanBottomBar({super.key, this.selectedItem = OceanNavItem.home});
 
-  /// `true` jika bar dipasang di halaman utama (ikon Beranda aktif).
-  final bool homeSelected;
+  final OceanNavItem selectedItem;
 
   void _goHome(BuildContext context) {
-    if (homeSelected) {
-      return;
-    }
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => MyHomePage()),
+      MaterialPageRoute(builder: (_) => MyHomePage()),
       (route) => false,
     );
   }
@@ -31,130 +25,198 @@ class OceanBottomBar extends StatelessWidget {
   void _showAddSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) {
-        // Menutup lembar, lalu membuka halaman dengan Navigator.push().
         void open(Widget page) {
           Navigator.pop(sheetContext);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (_) => page));
         }
 
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  'Tambah data',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        return Material(
+          color: const Color(0xFFF1FAFF),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          clipBehavior: Clip.antiAlias,
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 42,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey.shade200,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.work_outline),
-                title: const Text('Add Experience'),
-                onTap: () => open(const ExperienceFormPage()),
-              ),
-              ListTile(
-                leading: const Icon(Icons.school_outlined),
-                title: const Text('Add Education'),
-                onTap: () => open(const EducationFormPage()),
-              ),
-              ListTile(
-                leading: const Icon(Icons.emoji_events_outlined),
-                title: const Text('Add Achievement'),
-                onTap: () => open(const AchievementFormPage()),
-              ),
-              const SizedBox(height: 8),
-            ],
+                const Padding(
+                  padding: EdgeInsets.all(18),
+                  child: Text(
+                    'Tambah data',
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      color: OceanColors.navy,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.school_outlined),
+                  title: const Text('Add Education'),
+                  onTap: () => open(const EducationFormPage()),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.work_outline),
+                  title: const Text('Add Experience'),
+                  onTap: () => open(const ExperienceFormPage()),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.workspace_premium_outlined),
+                  title: const Text('Add Certification'),
+                  onTap: () => open(const AchievementFormPage()),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  void _comingSoon(BuildContext context, String label) {
-    showInfoSnackBar(context, '$label akan hadir di tahap berikutnya.');
-  }
+  Widget _navItem({
+    required IconData icon,
+    required String label,
+    required OceanNavItem item,
+    required VoidCallback onTap,
+  }) {
+    final active = selectedItem == item;
 
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      elevation: 12,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _BarIcon(
-                icon: homeSelected ? Icons.home : Icons.home_outlined,
-                tooltip: 'Beranda',
-                selected: homeSelected,
-                onPressed: () => _goHome(context),
-              ),
-              _BarIcon(
-                icon: Icons.bar_chart,
-                tooltip: 'Statistik',
-                onPressed: () => _comingSoon(context, 'Statistik'),
-              ),
-              IconButton.filled(
-                tooltip: 'Tambah',
-                icon: const Icon(Icons.add),
-                style: IconButton.styleFrom(
-                  backgroundColor: OceanColors.seaGreen,
-                  foregroundColor: Colors.white,
-                  fixedSize: const Size(50, 50),
+    return Expanded(
+      child: Tooltip(
+        message: label,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(vertical: 7),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 31,
+                  color: active ? OceanColors.seaGreen : OceanColors.navy,
                 ),
-                onPressed: () => _showAddSheet(context),
-              ),
-              _BarIcon(
-                icon: Icons.bookmark_border,
-                tooltip: 'Tersimpan',
-                onPressed: () => _comingSoon(context, 'Tersimpan'),
-              ),
-              _BarIcon(
-                icon: Icons.person_outline,
-                tooltip: 'Profil',
-                onPressed: () => _comingSoon(context, 'Profil'),
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: active ? FontWeight.w900 : FontWeight.w700,
+                    color: OceanColors.navy,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: active ? 18 : 0,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: OceanColors.seaGreen,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-}
-
-class _BarIcon extends StatelessWidget {
-  const _BarIcon({
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-    this.selected = false,
-  });
-
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onPressed;
-  final bool selected;
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: tooltip,
-      icon: Icon(icon, color: selected ? OceanColors.deep : Colors.black45),
-      onPressed: onPressed,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 0, 18, 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(38),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+          child: Container(
+            height: 82,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.78),
+              borderRadius: BorderRadius.circular(38),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.95),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: OceanColors.deep.withValues(alpha: 0.15),
+                  blurRadius: 16,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                _navItem(
+                  icon: Icons.home_outlined,
+                  label: 'Beranda',
+                  item: OceanNavItem.home,
+                  onTap: () => _goHome(context),
+                ),
+                _navItem(
+                  icon: Icons.work_outline,
+                  label: 'Portofolio',
+                  item: OceanNavItem.portfolio,
+                  onTap: () {},
+                ),
+                Expanded(
+                  child: Center(
+                    child: Material(
+                      color: OceanColors.seaGreen,
+                      elevation: 7,
+                      shape: const CircleBorder(),
+                      child: Tooltip(
+                        message: 'Tambah',
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => _showAddSheet(context),
+                          child: const SizedBox(
+                            width: 66,
+                            height: 66,
+                            child: Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 43,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                _navItem(
+                  icon: Icons.star_border_rounded,
+                  label: 'Favorit',
+                  item: OceanNavItem.favorite,
+                  onTap: () {},
+                ),
+                _navItem(
+                  icon: Icons.person_outline,
+                  label: 'Profil',
+                  item: OceanNavItem.profile,
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

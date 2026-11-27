@@ -1,5 +1,3 @@
-/// Kategori achievement, mengikuti `ACHIEVEMENTS_CHOICES` pada model Django
-/// `Achievements` di website myportofolio.
 enum AchievementCategory {
   academic('Academic'),
   competition('Competition'),
@@ -9,16 +7,12 @@ enum AchievementCategory {
 
   const AchievementCategory(this.label);
 
-  /// Teks yang ditampilkan kepada pengguna.
   final String label;
 }
 
-/// Data satu achievement (penghargaan/sertifikasi).
-///
-/// Field mengikuti model Django `Achievements`: `title`, `period`,
-/// `description`, `category`, dan `achievements_image_url`.
 class Achievement {
   const Achievement({
+    this.id,
     required this.title,
     required this.period,
     required this.description,
@@ -26,18 +20,38 @@ class Achievement {
     this.imageUrl = '',
   });
 
-  /// Nama penghargaan (maks. 255 karakter pada model).
+  final String? id;
   final String title;
-
-  /// Periode dalam bentuk teks, misalnya `15 Nov 2026 - 20 Jan 2027`.
   final String period;
-
-  /// Deskripsi penghargaan.
   final String description;
-
-  /// Kategori penghargaan.
   final AchievementCategory category;
-
-  /// URL gambar penghargaan (opsional, maks. 500 karakter pada model).
   final String imageUrl;
+
+  factory Achievement.fromJson(Map<String, dynamic> json) {
+    final categoryValue = json['category']?.toString() ?? 'Other';
+
+    final category = AchievementCategory.values.firstWhere(
+      (item) => item.label.toLowerCase() == categoryValue.toLowerCase(),
+      orElse: () => AchievementCategory.other,
+    );
+
+    return Achievement(
+      id: json['id']?.toString(),
+      title: json['title']?.toString() ?? '',
+      period: json['period']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      category: category,
+      imageUrl: json['achievements_image_url']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'period': period,
+      'description': description,
+      'category': category.label,
+      'achievements_image_url': imageUrl,
+    };
+  }
 }

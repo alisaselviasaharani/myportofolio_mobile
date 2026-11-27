@@ -12,13 +12,8 @@ class SkillsPage extends StatelessWidget {
   const SkillsPage({super.key});
 
   static const List<_Skill> _technical = [
-    _Skill('Flutter', Icons.flutter_dash, Color(0xFF1E88E5)),
     _Skill('Python', null, Color(0xFF3776AB), badge: 'Py'),
     _Skill('Java', Icons.coffee, Color(0xFFE53935)),
-    _Skill('Django', null, Color(0xFF0C4B33), badge: 'dj'),
-    _Skill('HTML', null, Color(0xFFE44D26), badge: '5'),
-    _Skill('CSS', null, Color(0xFF1572B6), badge: '3'),
-    _Skill('JavaScript', null, Color(0xFFF0B800), badge: 'JS'),
     _Skill('Git', Icons.call_split, Color(0xFFF05033)),
   ];
 
@@ -37,7 +32,6 @@ class SkillsPage extends StatelessWidget {
     _Skill('GitHub', Icons.pets, Color(0xFF24292F)),
     _Skill('VS Code', Icons.code, Color(0xFF1E88E5)),
     _Skill('Figma', Icons.design_services, Color(0xFFF24E1E)),
-    _Skill('Trello', Icons.view_kanban, Color(0xFF0079BF)),
   ];
 
   @override

@@ -9,12 +9,12 @@ import 'package:myportofolio_mobile/services/auth_state.dart';
 
 const _experienceJson = {
   'id': '3f2b8c1e-0000-0000-0000-000000000001',
-  'position': 'Backend Intern',
-  'company': 'PT Contoh',
+  'title': 'Backend Intern',
+  'institution': 'PT Contoh',
   'description': 'Membuat REST API.',
-  'type': 'Internship',
+  'category': 'Internship',
   'period': null,
-  'link': null,
+  'website': null,
 };
 
 ApiClient _clientWith(MockClientHandler handler) {
@@ -34,8 +34,8 @@ void main() {
     test('toJson tidak menyertakan id', () {
       final json = Experience.fromJson(_experienceJson).toJson();
       expect(json.containsKey('id'), isFalse);
-      expect(json['company'], 'PT Contoh');
-      expect(json['type'], 'Internship');
+      expect(json['institution'], 'PT Contoh');
+      expect(json['category'], 'Internship');
     });
   });
 
@@ -43,7 +43,7 @@ void main() {
     test('getExperiences mengembalikan daftar Experience', () async {
       final client = _clientWith((request) async {
         expect(request.method, 'GET');
-        expect(request.url.toString(), 'http://test/api/v1/experiences/');
+        expect(request.url.toString(), 'http://test/api/v1/experience/');
         return http.Response(jsonEncode([_experienceJson]), 200);
       });
       final experiences = await client.getExperiences();
@@ -56,7 +56,9 @@ void main() {
         expect(request.method, 'POST');
         expect(request.headers['Authorization'], 'Token abc123');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
-        expect(body['position'], 'Baru');
+        expect(body['title'], 'Baru');
+        expect(body['institution'], 'PT Contoh');
+        expect(body['category'], 'Full-time');
         expect(body.containsKey('id'), isFalse);
         return http.Response(jsonEncode(_experienceJson), 201);
       });
