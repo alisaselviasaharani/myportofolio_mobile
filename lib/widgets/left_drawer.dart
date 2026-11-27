@@ -9,6 +9,7 @@ import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:myportofolio_mobile/screens/skills_page.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/utils/logout.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:myportofolio_mobile/widgets/illustrations.dart';
@@ -65,13 +66,9 @@ class LeftDrawer extends StatelessWidget {
     Navigator.pop(context);
   }
 
-  /// Logout: cabut token di server (apa pun hasilnya sesi lokal dibersihkan).
-  Future<void> _logout(BuildContext context) async {
-    await context.read<AuthState>().logout();
-    if (!context.mounted) return;
-    showInfoSnackBar(context, 'Berhasil logout.');
-    Navigator.pop(context);
-  }
+  /// Logout: cabut token di server (apa pun hasilnya sesi lokal dibersihkan),
+  /// lalu kembali ke halaman Login.
+  Future<void> _logout(BuildContext context) => logoutAndShowLogin(context);
 
   @override
   Widget build(BuildContext context) {

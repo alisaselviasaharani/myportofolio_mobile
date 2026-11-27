@@ -11,3 +11,11 @@ const String apiBaseUrl = String.fromEnvironment(
 
 /// Versi aplikasi yang ditampilkan di Pengaturan > Tentang Aplikasi.
 const String appVersion = '2.0.0';
+
+/// Web Client ID dari Google Cloud Console untuk "Masuk dengan Google".
+///
+/// Nilainya harus sama dengan salah satu `GOOGLE_CLIENT_IDS` di backend.
+/// Berikan lewat `--dart-define=GOOGLE_SERVER_CLIENT_ID=xxxx.apps.googleusercontent.com`.
+const String googleServerClientId = String.fromEnvironment(
+  'GOOGLE_SERVER_CLIENT_ID',
+);
