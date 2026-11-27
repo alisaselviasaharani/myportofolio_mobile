@@ -124,6 +124,24 @@ class ApiClient {
     return decoded['token'] as String;
   }
 
+  /// Menukar ID token Google menjadi token DRF (backend memverifikasi ke Google).
+  Future<String> loginWithGoogle(String idToken) async {
+    final response = await _client.post(
+      _uri('/api/v1/auth/google/'),
+      headers: const {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({'id_token': idToken}),
+    );
+
+    _ensureSuccess(response);
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+
+    return decoded['token'] as String;
+  }
+
   Future<void> logout({required String token}) async {
     final response = await _client.post(
       _uri('/api/v1/auth/logout/'),

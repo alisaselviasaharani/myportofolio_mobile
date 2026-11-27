@@ -6,6 +6,7 @@ import 'package:myportofolio_mobile/screens/language_screen.dart';
 import 'package:myportofolio_mobile/services/app_settings.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/utils/logout.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
@@ -151,13 +152,11 @@ class SettingsScreen extends StatelessWidget {
 
     if (confirmed != true) return;
 
-    await auth.logout();
-
     if (!context.mounted) return;
 
-    showInfoSnackBar(
+    await logoutAndShowLogin(
       context,
-      strings.loggedOut,
+      message: strings.loggedOut,
     );
   }
 

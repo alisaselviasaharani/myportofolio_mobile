@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/screens/splash_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/app_settings.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
@@ -11,7 +12,7 @@ import 'package:provider/provider.dart';
 /// Titik masuk aplikasi.
 void main() {
   runApp(
-    MyApp(apiClient: ApiClient()),
+    MyApp(apiClient: ApiClient(), showIntro: true),
   );
 }
 
@@ -19,10 +20,15 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({
     required this.apiClient,
+    this.showIntro = false,
     super.key,
   });
 
   final ApiClient apiClient;
+
+  /// `true` (dipakai `main`): mulai dari splash, onboarding, lalu login.
+  /// `false`: langsung ke beranda (dipakai test).
+  final bool showIntro;
 
   /// Mengubah AppThemeMode menjadi ThemeMode Flutter.
   ThemeMode _getThemeMode(AppThemeMode mode) {
@@ -97,7 +103,7 @@ class MyApp extends StatelessWidget {
             },
 
             // Halaman awal aplikasi.
-            home: MyHomePage(),
+            home: showIntro ? const SplashScreen() : MyHomePage(),
           );
         },
       ),

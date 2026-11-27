@@ -89,8 +89,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         content: Text(
-          'Jika $email terdaftar, tautan untuk mengatur ulang kata sandi '
-          'sudah dikirim. Periksa juga folder spam.',
+          'Jika $email terdaftar, kode untuk mengatur ulang kata sandi '
+          'sudah dikirim. Salin kode itu di halaman berikutnya. Periksa '
+          'juga folder spam.',
         ),
         actions: [
           TextButton(
