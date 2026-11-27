@@ -1,3 +1,4 @@
+
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/reset_password_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
@@ -15,12 +16,14 @@ class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  State<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
+
   bool _isSubmitting = false;
 
   @override
@@ -29,31 +32,44 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
+  /// Mengirim permintaan reset password melalui API.
   Future<void> _submit() async {
     if (_isSubmitting || !_formKey.currentState!.validate()) return;
 
     final api = context.read<ApiClient>();
     final email = _email.text.trim();
+
     setState(() {
       _isSubmitting = true;
     });
 
+    var sent = false;
+
     try {
       await api.requestPasswordReset(email);
-      if (!mounted) return;
-      await _showSentDialog(email);
+      sent = true;
     } catch (e) {
-      if (!mounted) return;
-      showInfoSnackBar(
-        context,
-        authErrorMessage(e, failed: 'Gagal mengirim tautan'),
-      );
+      if (mounted) {
+        showInfoSnackBar(
+          context,
+          authErrorMessage(
+            e,
+            failed: 'Gagal mengirim tautan',
+          ),
+        );
+      }
     } finally {
+      // Hentikan loading sebelum dialog ditampilkan.
       if (mounted) {
         setState(() {
           _isSubmitting = false;
         });
       }
+    }
+
+    // Dialog hanya muncul jika permintaan berhasil.
+    if (sent && mounted) {
+      await _showSentDialog(email);
     }
   }
 
@@ -62,7 +78,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final goToReset = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
         title: const Text(
           'Cek emailmu',
           style: TextStyle(
@@ -86,12 +104,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ],
       ),
     );
+
     if (goToReset != true || !mounted) return;
-    // Ganti halaman ini agar "Kembali ke Login" di halaman berikutnya
-    // langsung menuju Login.
+
+    // Ganti halaman ini agar "Kembali ke Login"
+    // di halaman berikutnya langsung menuju Login.
     await Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
+      MaterialPageRoute(
+        builder: (_) => const ResetPasswordScreen(),
+      ),
     );
   }
 
@@ -112,18 +134,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           icon: Icons.mail_outline,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.done,
-          autofillHints: const [AutofillHints.email],
+          autofillHints: const [
+            AutofillHints.email,
+          ],
           onSubmitted: (_) => _submit(),
           validator: FormValidators.requiredEmail,
         ),
+
         const SizedBox(height: 22),
+
         AuthButton(
           label: 'Kirim Tautan',
           icon: Icons.send_rounded,
           loading: _isSubmitting,
           onPressed: _submit,
         ),
+
         const SizedBox(height: 12),
+
         Center(
           child: AuthLink(
             label: 'Kembali ke Login',

@@ -180,13 +180,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 28),
-            SocialCircleButton(
-              tooltip: 'Masuk dengan GitHub',
-              background: const Color(0xFF14171C),
-              onTap: () => _socialSoon('GitHub'),
-              child: const Icon(Icons.code, size: 30, color: Colors.white),
-            ),
           ],
         ),
         const SizedBox(height: 20),
