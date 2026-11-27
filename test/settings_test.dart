@@ -65,6 +65,7 @@ void main() {
 
       await tester.tap(find.text('Keluar'));
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Kamu belum login.'), findsOneWidget);
     });
   });
