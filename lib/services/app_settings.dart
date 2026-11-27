@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 
 /// Bahasa yang didukung aplikasi.
