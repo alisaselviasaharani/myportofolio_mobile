@@ -230,7 +230,7 @@ class _ContactLinks extends StatelessWidget {
   static const List<_ContactItem> _items = [
     _ContactItem(
       name: 'Email',
-      value: 'alisa.saharani@ui.ac.id',
+      value: 'alisa.selvia@ui.ac.id',
       icon: Icons.mail,
       color: Color(0xFF2F80ED),
     ),

@@ -108,12 +108,12 @@ class _EducationFormPageState extends State<EducationFormPage> {
         ),
         SummaryItem(
           label: 'Start Date',
-          value: formatMonthYear(education.startDate),
+          value: formatMonthYear(education.startDate!),
           icon: Icons.calendar_today_outlined,
         ),
         SummaryItem(
           label: 'End Date',
-          value: formatMonthYear(education.endDate),
+          value: formatMonthYear(education.endDate!),
           icon: Icons.event_available_outlined,
         ),
         SummaryItem(

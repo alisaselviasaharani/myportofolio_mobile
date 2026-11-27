@@ -191,7 +191,9 @@ void main() {
         'Technical Skills',
         'Soft Skills',
         'Tools & Others',
-        'Flutter',
+        'Python',
+        'Java',
+        'Git',
         'Teamwork',
         'GitHub',
       ]) {

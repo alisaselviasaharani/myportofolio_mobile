@@ -2,7 +2,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'experience.g.dart';
 
-/// Experience portofolio yang disinkronkan dengan API Django REST Framework.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Experience {
   const Experience({
@@ -18,26 +17,25 @@ class Experience {
   factory Experience.fromJson(Map<String, dynamic> json) =>
       _$ExperienceFromJson(json);
 
-  /// UUID yang dihasilkan server; tidak ikut dikirim pada body POST.
   @JsonKey(includeToJson: false)
   final String? id;
 
+  @JsonKey(name: 'title', defaultValue: '')
   final String position;
 
+  @JsonKey(name: 'institution', defaultValue: '')
   final String company;
 
+  @JsonKey(defaultValue: '')
   final String description;
 
-  /// Tipe experience, mis. `Full-time`, `Internship`.
-  @JsonKey(defaultValue: '')
+  @JsonKey(name: 'category', defaultValue: '')
   final String type;
 
-  /// Periode dalam bentuk teks (opsional).
   @JsonKey(defaultValue: '')
   final String period;
 
-  /// Tautan experience (opsional).
-  @JsonKey(defaultValue: '')
+  @JsonKey(name: 'website', defaultValue: '')
   final String link;
 
   Map<String, dynamic> toJson() => _$ExperienceToJson(this);
