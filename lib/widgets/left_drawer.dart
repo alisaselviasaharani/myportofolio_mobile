@@ -4,6 +4,7 @@ import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/screens/settings_screen.dart';
 import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:myportofolio_mobile/screens/skills_page.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
@@ -23,6 +24,7 @@ enum DrawerDestination {
   experienceList,
   skills,
   contact,
+  settings,
 }
 
 /// Drawer navigasi yang dipakai bersama oleh semua halaman.
@@ -143,8 +145,8 @@ class LeftDrawer extends StatelessWidget {
                 _DrawerTile(
                   icon: Icons.settings_outlined,
                   title: 'Settings',
-                  selected: false,
-                  onTap: () => _comingSoon(context, 'Settings'),
+                  selected: selected == DrawerDestination.settings,
+                  onTap: () => _go(context, const SettingsScreen()),
                 ),
                 if (isLoggedIn)
                   _DrawerTile(

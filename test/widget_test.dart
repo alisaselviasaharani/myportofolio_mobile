@@ -11,6 +11,7 @@ import 'package:myportofolio_mobile/screens/login_screen.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/skills_page.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/app_settings.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:provider/provider.dart';
@@ -54,6 +55,7 @@ Widget _withProviders(Widget child) {
     providers: [
       Provider.value(value: apiClient),
       ChangeNotifierProvider(create: (_) => AuthState(apiClient)),
+      ChangeNotifierProvider(create: (_) => AppSettings()),
     ],
     child: child,
   );
