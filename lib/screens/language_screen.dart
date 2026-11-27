@@ -1,3 +1,4 @@
+
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/l10n/app_strings.dart';
 import 'package:myportofolio_mobile/services/app_settings.dart';
@@ -7,10 +8,7 @@ import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:provider/provider.dart';
 
-/// Halaman "Bahasa": pilih Bahasa Indonesia (ID) atau English (EN).
-///
-/// Pilihan disimpan di [AppSettings] sehingga teks Pengaturan langsung
-/// berganti bahasa.
+/// Halaman pemilihan Bahasa Indonesia dan English.
 class LanguageScreen extends StatelessWidget {
   const LanguageScreen({super.key});
 
@@ -24,7 +22,10 @@ class LanguageScreen extends StatelessWidget {
       extendBody: true,
       extendBodyBehindAppBar: true,
       appBar: oceanAppBar(title: strings.language),
-      bottomNavigationBar: const OceanBottomBar(selected: OceanTab.favorite),
+
+      // Bottom navigation
+      bottomNavigationBar: const OceanBottomBar(),
+
       body: OceanBackground(
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(20, top + 16, 20, 120),
@@ -33,7 +34,10 @@ class LanguageScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.55),
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: Colors.white, width: 1.5),
+              border: Border.all(
+                color: Colors.white,
+                width: 1.5,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: OceanColors.deep.withValues(alpha: 0.12),
@@ -49,7 +53,9 @@ class LanguageScreen extends StatelessWidget {
                   flag: const IndonesiaFlag(),
                   label: strings.indonesian,
                   selected: settings.language == AppLanguage.id,
-                  onTap: () => settings.setLanguage(AppLanguage.id),
+                  onTap: () {
+                    settings.setLanguage(AppLanguage.id);
+                  },
                 ),
                 const SizedBox(height: 12),
                 _LanguageOption(
@@ -57,7 +63,9 @@ class LanguageScreen extends StatelessWidget {
                   flag: const UkFlag(),
                   label: strings.english,
                   selected: settings.language == AppLanguage.en,
-                  onTap: () => settings.setLanguage(AppLanguage.en),
+                  onTap: () {
+                    settings.setLanguage(AppLanguage.en);
+                  },
                 ),
               ],
             ),
@@ -93,7 +101,10 @@ class _LanguageOption extends StatelessWidget {
         borderRadius: BorderRadius.circular(26),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           child: Row(
             children: [
               flag,
@@ -116,12 +127,18 @@ class _LanguageOption extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: selected ? _checkColor : Colors.white,
                   border: Border.all(
-                    color: selected ? _checkColor : const Color(0xFF7FC4EA),
+                    color: selected
+                        ? _checkColor
+                        : const Color(0xFF7FC4EA),
                     width: 2,
                   ),
                 ),
                 child: selected
-                    ? const Icon(Icons.check, color: Colors.white, size: 22)
+                    ? const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 22,
+                      )
                     : null,
               ),
             ],
