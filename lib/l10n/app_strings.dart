@@ -2,21 +2,31 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/services/app_settings.dart';
 import 'package:provider/provider.dart';
 
-/// Teks dua bahasa (Indonesia / Inggris) untuk layar Pengaturan.
+/// Teks dua bahasa (Indonesia / Inggris) untuk aplikasi.
 class AppStrings {
   const AppStrings._(this._values);
 
   final Map<String, String> _values;
 
-  /// Mengambil teks sesuai bahasa aktif; ikut dibangun ulang saat bahasa
-  /// berubah.
-  static AppStrings of(BuildContext context) {
-    final language = context.watch<AppSettings>().language;
-    return forLanguage(language);
+  /// Mengambil teks sesuai bahasa aktif.
+  ///
+  /// listen = true:
+  /// Widget akan dibangun ulang saat bahasa berubah.
+  ///
+  /// listen = false:
+  /// Mengambil bahasa tanpa berlangganan perubahan.
+  static AppStrings of(BuildContext context, {bool listen = true}) {
+    final settings = listen
+        ? context.watch<AppSettings>()
+        : context.read<AppSettings>();
+
+    return forLanguage(settings.language);
   }
 
-  static AppStrings forLanguage(AppLanguage language) =>
-      language == AppLanguage.id ? _id : _en;
+  /// Mengambil teks berdasarkan bahasa.
+  static AppStrings forLanguage(AppLanguage language) {
+    return language == AppLanguage.id ? _id : _en;
+  }
 
   String get(String key) => _values[key] ?? key;
 
@@ -26,17 +36,22 @@ class AppStrings {
   String get notifications => get('notifications');
   String get appearance => get('appearance');
   String get light => get('light');
+  String get dark => get('dark');
+  String get system => get('system');
   String get about => get('about');
   String get version => get('version');
   String get logout => get('logout');
   String get indonesian => get('indonesian');
   String get english => get('english');
+
   String get navHome => get('navHome');
   String get navPortfolio => get('navPortfolio');
   String get navFavorite => get('navFavorite');
   String get navProfile => get('navProfile');
   String get navAdd => get('navAdd');
+
   String get addData => get('addData');
+
   String get logoutTitle => get('logoutTitle');
   String get logoutMessage => get('logoutMessage');
   String get cancel => get('cancel');
@@ -45,6 +60,7 @@ class AppStrings {
   String get comingSoon => get('comingSoon');
   String get close => get('close');
 
+  /// Bahasa Indonesia.
   static const AppStrings _id = AppStrings._({
     'settings': 'Pengaturan',
     'accountProfile': 'Akun & Profil',
@@ -52,6 +68,8 @@ class AppStrings {
     'notifications': 'Notifikasi',
     'appearance': 'Tampilan Aplikasi',
     'light': 'Terang',
+    'dark': 'Gelap',
+    'system': 'Ikuti sistem',
     'about': 'Tentang Aplikasi',
     'version': 'Versi',
     'logout': 'Keluar',
@@ -72,6 +90,7 @@ class AppStrings {
     'close': 'Tutup',
   });
 
+  /// Bahasa Inggris.
   static const AppStrings _en = AppStrings._({
     'settings': 'Settings',
     'accountProfile': 'Account & Profile',
@@ -79,6 +98,8 @@ class AppStrings {
     'notifications': 'Notifications',
     'appearance': 'App Appearance',
     'light': 'Light',
+    'dark': 'Dark',
+    'system': 'Follow system',
     'about': 'About the App',
     'version': 'Version',
     'logout': 'Log out',
