@@ -13,9 +13,14 @@ import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:provider/provider.dart';
 
-/// Halaman "Akun & Profil": data akun yang sedang login (nama, username,
-/// email) dari Django, ubah nama lengkap, dan keluar. Jika belum login,
-/// halaman menawarkan tombol Login.
+/// Halaman Akun & Profil.
+///
+/// Fitur:
+/// - Menampilkan data akun dari Django REST Framework.
+/// - Menampilkan kondisi belum login.
+/// - Mengubah nama lengkap melalui PATCH.
+/// - Menangani HTTP 404, 401, dan kesalahan koneksi.
+/// - Logout.
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
 
@@ -31,96 +36,157 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   void initState() {
     super.initState();
-    if (context.read<AuthState>().isLoggedIn) {
-      _load();
-    }
+
+    // Memuat profil setelah frame pertama selesai.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      if (context.read<AuthState>().isLoggedIn) {
+        _load();
+      }
+    });
   }
 
-  /// Pesan untuk kegagalan memuat/menyimpan akun.
+  /// Mengubah error API menjadi pesan yang mudah dipahami.
   String _messageFor(Object error) {
     if (error is ApiException) {
       if (error.statusCode == 404) {
         return 'Server belum mendukung Akun & Profil. Perbarui backend Django.';
       }
+
       if (error.statusCode == 401) {
         return 'Sesi berakhir. Silakan login kembali.';
       }
+
       return 'Gagal memuat akun (status ${error.statusCode}).';
     }
+
     return 'Tidak dapat terhubung ke server. Pastikan backend Django berjalan.';
   }
 
+  /// Mengambil data profil dari backend.
   Future<void> _load() async {
+    if (!mounted) return;
+
     final token = context.read<AuthState>().token;
+
     if (token == null) return;
+
     final api = context.read<ApiClient>();
+
     setState(() {
       _loading = true;
       _error = null;
     });
+
     try {
       final profile = await api.getProfile(token: token);
+
       if (!mounted) return;
-      setState(() => _profile = profile);
+
+      setState(() {
+        _profile = profile;
+        _error = null;
+      });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = _messageFor(e));
+
+      setState(() {
+        _error = _messageFor(e);
+      });
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
+  /// Membuka proses login.
   Future<void> _login() async {
     final ok = await ensureLoggedIn(context);
-    if (ok && mounted) {
+
+    if (!mounted) return;
+
+    if (ok) {
       setState(() {});
       await _load();
     }
   }
 
+  /// Mengubah nama lengkap pengguna.
   Future<void> _editName() async {
     final current = _profile?.fullName ?? '';
+
     final controller = TextEditingController(text: current);
+
     final newName = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Ubah nama lengkap'),
-        content: TextField(
-          key: const Key('fullNameField'),
-          controller: controller,
-          maxLength: 150,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(labelText: 'Nama lengkap'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Batal'),
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Ubah nama lengkap'),
+          content: TextField(
+            key: const Key('fullNameField'),
+            controller: controller,
+            maxLength: 150,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(labelText: 'Nama lengkap'),
           ),
-          TextButton(
-            key: const Key('saveNameButton'),
-            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              key: const Key('saveNameButton'),
+              onPressed: () {
+                Navigator.pop(dialogContext, controller.text.trim());
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
     );
+
     controller.dispose();
-    if (newName == null || newName.isEmpty || newName == current) return;
+
+    if (newName == null || newName.isEmpty || newName == current) {
+      return;
+    }
+
     if (!mounted) return;
 
     final token = context.read<AuthState>().token;
+
     if (token == null) return;
+
     final api = context.read<ApiClient>();
+
     try {
       final updated = await api.updateProfileName(newName, token: token);
+
       if (!mounted) return;
-      setState(() => _profile = updated);
-      pushNotification(context, 'Profil diperbarui', 'Nama: ${updated.displayName}');
+
+      setState(() {
+        _profile = updated;
+        _error = null;
+      });
+
+      pushNotification(
+        context,
+        'Profil diperbarui',
+        'Nama: ${updated.displayName}',
+      );
+
       showInfoSnackBar(context, 'Nama berhasil diperbarui.');
     } catch (e) {
       if (!mounted) return;
+
       showInfoSnackBar(context, _messageFor(e));
     }
   }
@@ -128,7 +194,9 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     final strings = AppStrings.of(context);
+
     final isLoggedIn = context.watch<AuthState>().isLoggedIn;
+
     final top = MediaQuery.paddingOf(context).top + oceanAppBarHeight;
 
     return Scaffold(
@@ -145,18 +213,23 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  /// Huruf pertama nama untuk avatar ('?' jika data belum ada).
+  /// Mengambil huruf pertama nama untuk avatar.
   static String _initial(UserProfile? profile) {
     final name = profile?.displayName ?? '';
+
     return name.isEmpty ? '?' : name.substring(0, 1).toUpperCase();
   }
 
+  /// Tampilan ketika pengguna belum login.
   Widget _buildLoggedOut() {
     return _Card(
       child: Column(
         children: [
-          const Icon(Icons.account_circle_outlined,
-              size: 72, color: OceanColors.navy),
+          const Icon(
+            Icons.account_circle_outlined,
+            size: 72,
+            color: OceanColors.navy,
+          ),
           const SizedBox(height: 12),
           const Text(
             'Kamu belum login.',
@@ -179,8 +252,10 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
+  /// Tampilan akun ketika pengguna sudah login.
   Widget _buildAccount() {
     final profile = _profile;
+
     return Column(
       children: [
         _Card(
@@ -199,6 +274,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
               ),
               const SizedBox(height: 12),
+
               if (_loading && profile == null)
                 const Padding(
                   padding: EdgeInsets.all(12),
@@ -214,7 +290,10 @@ class _AccountScreenState extends State<AccountScreen> {
                       style: const TextStyle(color: OceanColors.navy),
                     ),
                     const SizedBox(height: 8),
-                    TextButton(onPressed: _load, child: const Text('Coba lagi')),
+                    TextButton(
+                      onPressed: _load,
+                      child: const Text('Coba lagi'),
+                    ),
                   ],
                 )
               else ...[
@@ -244,6 +323,7 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
         const SizedBox(height: 16),
+
         if (profile != null) ...[
           OceanButton(
             label: 'Ubah nama',
@@ -252,6 +332,7 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           const SizedBox(height: 12),
         ],
+
         OceanButton(
           label: 'Keluar',
           icon: Icons.logout,
@@ -262,6 +343,7 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 }
 
+/// Kartu dengan desain Ocean Theme.
 class _Card extends StatelessWidget {
   const _Card({required this.child});
 
@@ -289,6 +371,7 @@ class _Card extends StatelessWidget {
   }
 }
 
+/// Baris informasi akun.
 class _InfoRow extends StatelessWidget {
   const _InfoRow({
     required this.icon,

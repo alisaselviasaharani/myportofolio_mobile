@@ -62,12 +62,15 @@ class NotificationScreen extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.fromLTRB(20, top + 16, 20, 120),
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.7),
+            // Material (bukan Container berwarna) agar latar dan efek ink
+            // ListTile tidak tertutup dekorasi.
+            Material(
+              color: Colors.white.withValues(alpha: 0.7),
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.white, width: 1.5),
+                side: const BorderSide(color: Colors.white, width: 1.5),
               ),
+              clipBehavior: Clip.antiAlias,
               child: SwitchListTile(
                 key: const Key('notificationsSwitch'),
                 value: settings.notificationsEnabled,

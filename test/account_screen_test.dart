@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/account_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/app_settings.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:provider/provider.dart';
 
@@ -13,6 +14,8 @@ Widget _app(ApiClient api, {String? token}) {
   return MultiProvider(
     providers: [
       Provider.value(value: api),
+      // AccountScreen mengambil teks lewat AppStrings.of(context).
+      ChangeNotifierProvider(create: (_) => AppSettings()),
       ChangeNotifierProvider(create: (_) => AuthState(api, initialToken: token)),
     ],
     child: const MaterialApp(home: AccountScreen()),
