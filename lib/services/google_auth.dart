@@ -55,7 +55,18 @@ class GoogleAuthService {
     } on GoogleSignInException catch (e) {
       // Pengguna menutup pemilih akun: bukan error.
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
-      rethrow;
+      if (e.code == GoogleSignInExceptionCode.clientConfigurationError ||
+          e.code == GoogleSignInExceptionCode.providerConfigurationError) {
+        throw GoogleAuthUnavailable(
+          'Konfigurasi Google belum cocok (${e.code.name}). Pastikan di Google '
+          'Cloud Console ada OAuth client Android dengan package name '
+          '$androidPackageName dan SHA-1 sertifikat penandatangan APK ini.',
+        );
+      }
+      throw GoogleAuthUnavailable(
+        'Masuk dengan Google gagal (${e.code.name}'
+        '${e.description == null ? '' : ': ${e.description}'}).',
+      );
     }
   }
 }

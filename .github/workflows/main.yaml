@@ -43,8 +43,30 @@ jobs:
       - name: Test
         run: flutter test
 
+      - name: Siapkan keystore (SHA-1 tetap untuk Masuk dengan Google)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::warning::KEYSTORE_BASE64 belum diisi; APK memakai debug key acak, Masuk dengan Google tidak akan cocok."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+          {
+            echo "storeFile=release.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}"
+          } > android/key.properties
+
       - name: Build release APK
         run: flutter build apk --release --dart-define=API_BASE_URL="${API_BASE_URL:-http://10.0.2.2:8000}"
+
+      - name: Cetak SHA-1 penandatangan APK
+        run: keytool -printcert -jarfile build/app/outputs/flutter-apk/app-release.apk | grep -i "SHA1" || true
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

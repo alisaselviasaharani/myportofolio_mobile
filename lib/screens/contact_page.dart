@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
@@ -57,7 +59,7 @@ class _ContactPageState extends State<ContactPage> {
       await api.sendContactMessage(name: name, email: email, message: message);
     } on ApiException catch (e) {
       if (!mounted) return;
-      showInfoSnackBar(context, _errorFor(e.statusCode));
+      showInfoSnackBar(context, _errorFor(e));
       return;
     } catch (_) {
       if (!mounted) return;
@@ -91,21 +93,44 @@ class _ContactPageState extends State<ContactPage> {
     );
   }
 
-  /// Pesan kesalahan sesuai status dari backend.
-  String _errorFor(int status) {
-    switch (status) {
+  /// Pesan kesalahan sesuai status dari backend, plus detail dari server
+  /// (jika ada) supaya penyebab email gagal terkirim terlihat.
+  String _errorFor(ApiException e) {
+    final detail = _serverDetail(e.message);
+    final suffix = detail.isEmpty ? '' : '\n$detail';
+    switch (e.statusCode) {
       case 400:
-        return 'Data pesan tidak valid. Periksa nama, email, dan pesan.';
+        return 'Data pesan tidak valid. Periksa nama, email, dan pesan.$suffix';
       case 404:
         return 'Server belum mendukung form pesan. Perbarui backend Django.';
       case 429:
         return 'Terlalu banyak pesan. Coba lagi nanti.';
+      case 500:
       case 502:
       case 503:
-        return 'Server belum bisa mengirim email. Pesan belum terkirim.';
+        return 'Server belum bisa mengirim email (status ${e.statusCode}). '
+            'Pesan belum terkirim.$suffix';
       default:
-        return 'Pesan gagal dikirim (status $status).';
+        return 'Pesan gagal dikirim (status ${e.statusCode}).$suffix';
     }
+  }
+
+  /// Mengambil teks singkat dari badan error JSON (`detail`/`error`/`message`).
+  String _serverDetail(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        for (final key in const ['detail', 'error', 'message']) {
+          final value = decoded[key];
+          if (value is String && value.trim().isNotEmpty) {
+            return value.trim();
+          }
+        }
+      }
+    } catch (_) {
+      // Bukan JSON (mis. halaman error HTML): abaikan.
+    }
+    return '';
   }
 
   void _resetForm() {

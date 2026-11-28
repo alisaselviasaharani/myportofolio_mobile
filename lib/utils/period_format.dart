@@ -95,3 +95,43 @@ DateTime? _parseDate(String text) {
   // Menolak tanggal yang tidak ada (misalnya 31 Feb) karena DateTime menggulung.
   return date.day == day ? date : null;
 }
+
+/// Membaca teks bulan-tahun seperti `Jun 2027` menjadi tanggal 1 bulan itu.
+/// Mengembalikan `null` jika formatnya tidak dikenali.
+DateTime? parseMonthYear(String text) {
+  final match = RegExp(r'^(\S+)\s+(\d{4})$').firstMatch(text.trim());
+  if (match == null) {
+    return null;
+  }
+  final name = match.group(1)!.toLowerCase();
+  final month = _monthNames.indexWhere((m) => m.toLowerCase() == name);
+  if (month == -1) {
+    return null;
+  }
+  return DateTime(int.parse(match.group(2)!), month + 1);
+}
+
+/// `true` jika [period] menandakan pendidikan/pengalaman yang masih berjalan:
+/// berakhir `Sekarang`, atau tanggal akhirnya belum lewat (misalnya
+/// `Sep 2023 – Jun 2027` dibaca pada November 2026).
+///
+/// Django tidak menyimpan status Aktif/Lulus, jadi status dihitung dari
+/// teks periode. Bulan-tahun dianggap berakhir di hari terakhir bulan itu.
+bool isPeriodOngoing(String period, {DateTime? now}) {
+  if (period.toLowerCase().contains('sekarang')) {
+    return true;
+  }
+  final parts = period.trim().split(RegExp(r'\s*[–-]\s*'));
+  if (parts.length != 2) {
+    return false;
+  }
+  final today = now ?? DateTime.now();
+  final monthYear = parseMonthYear(parts.last);
+  final DateTime? end = monthYear != null
+      ? DateTime(monthYear.year, monthYear.month + 1, 0) // hari terakhir bulan
+      : _parseDate(parts.last);
+  if (end == null) {
+    return false;
+  }
+  return !end.isBefore(DateTime(today.year, today.month, today.day));
+}
