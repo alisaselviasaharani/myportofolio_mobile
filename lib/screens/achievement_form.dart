@@ -1,9 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/achievement.dart';
+import 'package:myportofolio_mobile/screens/achievement_list_screen.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
+import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:myportofolio_mobile/widgets/date_form_field.dart';
 import 'package:myportofolio_mobile/widgets/form_card.dart';
 import 'package:myportofolio_mobile/widgets/form_header.dart';
@@ -13,14 +18,24 @@ import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
+import 'package:provider/provider.dart';
 
 /// Halaman formulir untuk menambah achievement (penghargaan/sertifikasi).
 ///
 /// Field mengikuti model Django `Achievements`: nama, periode, deskripsi,
-/// kategori, dan URL gambar. Setelah semua input lolos validasi, ringkasan
-/// isian ditampilkan lewat [showSummaryDialog].
+/// kategori, dan URL gambar. Setelah semua input lolos validasi, data dikirim
+/// ke backend Django (`POST /api/v1/achievements/`) dengan token, sehingga
+/// pengguna harus login lebih dulu, lalu ringkasan ditampilkan lewat
+/// [showSummaryDialog].
+///
+/// Setelah dialog ditutup, form ditutup: kembali ke halaman sebelumnya jika
+/// [popOnSuccess] (dipakai daftar agar memuat ulang), atau diganti dengan
+/// [AchievementListScreen] agar hasilnya langsung terlihat.
 class AchievementFormPage extends StatefulWidget {
-  const AchievementFormPage({super.key});
+  const AchievementFormPage({super.key, this.popOnSuccess = false});
+
+  /// `true` jika form dibuka dari daftar dan cukup kembali ke daftar itu.
+  final bool popOnSuccess;
 
   @override
   State<AchievementFormPage> createState() => _AchievementFormPageState();
@@ -45,6 +60,7 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
   AchievementCategory _category = _defaultCategory;
   DateTime? _startDate;
   DateTime? _endDate;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -84,19 +100,65 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
     });
   }
 
-  /// Dipanggil tombol Simpan: validasi dulu, dialog hanya jika semua valid.
-  void _submit() {
+  /// Dipanggil tombol Simpan: validasi, pastikan login, kirim ke Django, lalu
+  /// tampilkan dialog ringkasan jika berhasil.
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    final achievement = Achievement(
+
+    // Pastikan sudah login (membuka LoginScreen jika belum).
+    final loggedIn = await ensureLoggedIn(context);
+    if (!loggedIn || !mounted) return;
+
+    final auth = context.read<AuthState>();
+    final apiClient = context.read<ApiClient>();
+    final token = auth.token;
+    if (token == null) return;
+
+    final newAchievement = Achievement(
       title: _titleController.text.trim(),
       period: formatPeriod(_startDate!, _endDate),
       description: _descriptionController.text.trim(),
       category: _category,
       imageUrl: _imageUrlController.text.trim(),
     );
-    PortfolioStore.instance.addAchievement(achievement);
+
+    Achievement? saved;
+    setState(() => _isSubmitting = true);
+    try {
+      saved = await apiClient.createAchievement(newAchievement, token: token);
+      if (!mounted) return;
+      PortfolioStore.instance.addAchievement(saved);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      if (e.statusCode == 401) {
+        // Token tidak valid/kedaluwarsa: logout lalu minta login ulang.
+        await auth.logout();
+        if (!mounted) return;
+        showInfoSnackBar(context, 'Sesi berakhir. Silakan login kembali.');
+        await ensureLoggedIn(context);
+      } else {
+        showInfoSnackBar(
+          context,
+          'Gagal menyimpan sertifikasi (status ${e.statusCode}).',
+        );
+      }
+      return;
+    } catch (_) {
+      if (!mounted) return;
+      showInfoSnackBar(
+        context,
+        'Tidak dapat terhubung ke server. Pastikan backend Django berjalan.',
+      );
+      return;
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+    final achievement = saved;
+    if (!mounted || achievement == null) return;
     showSummaryDialog(
       context,
       title: 'Certification Saved!',
@@ -127,20 +189,22 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
           icon: Icons.image_outlined,
         ),
       ],
-      onClosed: _resetForm,
+      onClosed: _finish,
     );
   }
 
-  /// Mengembalikan form dan semua state ke kondisi awal.
-  void _resetForm() {
-    _formKey.currentState!.reset();
-    setState(() {
-      _category = _defaultCategory;
-      _startDate = null;
-      _endDate = null;
-      _startDateController.clear();
-      _endDateController.clear();
-    });
+  /// Menutup form setelah dialog sukses: kembali ke daftar yang membukanya,
+  /// atau membuka daftar sertifikasi agar data baru langsung terlihat.
+  void _finish() {
+    if (!mounted) return;
+    if (widget.popOnSuccess) {
+      Navigator.pop(context, true);
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AchievementListScreen()),
+      );
+    }
   }
 
   @override
@@ -312,11 +376,13 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                     // === Tombol Simpan ===
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
-                      child: OceanButton(
-                        label: 'Simpan',
-                        icon: Icons.save_outlined,
-                        onPressed: _submit,
-                      ),
+                      child: _isSubmitting
+                          ? const Center(child: CircularProgressIndicator())
+                          : OceanButton(
+                              label: 'Simpan',
+                              icon: Icons.save_outlined,
+                              onPressed: _submit,
+                            ),
                     ),
                   ],
                 ),

@@ -1,10 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
+import 'package:provider/provider.dart';
 
 final _institutionField = find.byKey(const Key('institutionField'));
 final _levelField = find.byKey(const Key('levelField'));
@@ -14,13 +21,38 @@ final _coursesField = find.byKey(const Key('coursesField'));
 final _currentCheckbox = find.byKey(const Key('currentCheckbox'));
 final _saveButton = find.widgetWithText(OceanButton, 'Simpan');
 
+/// Permintaan HTTP yang diterima server palsu pada test saat ini.
+final List<http.BaseRequest> requests = [];
+
 Future<void> _pumpForm(WidgetTester tester, {Education? education}) async {
   // Layar setinggi cukup agar semua field terlihat tanpa menggulir.
   tester.view.physicalSize = const Size(800, 2600);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
+  // Server palsu: membalas data yang dikirim + id; semua permintaan dicatat.
+  final client = ApiClient(
+    baseUrl: 'http://test',
+    client: MockClient((request) async {
+      requests.add(request);
+      expect(request.headers['Authorization'], 'Token tok');
+      final body = jsonDecode(request.body) as Map<String, dynamic>;
+      return http.Response(
+        jsonEncode({...body, 'id': 'edu-1'}),
+        request.method == 'POST' ? 201 : 200,
+      );
+    }),
+  );
   await tester.pumpWidget(
-    MaterialApp(home: EducationFormPage(education: education)),
+    MultiProvider(
+      providers: [
+        Provider.value(value: client),
+        // Sudah login, jadi guard langsung lolos.
+        ChangeNotifierProvider(
+          create: (_) => AuthState(client, initialToken: 'tok'),
+        ),
+      ],
+      child: MaterialApp(home: EducationFormPage(education: education)),
+    ),
   );
 }
 
@@ -46,7 +78,10 @@ Future<void> _fillRequired(WidgetTester tester) async {
 }
 
 void main() {
-  setUp(() => PortfolioStore.instance.clear());
+  setUp(() {
+    PortfolioStore.instance.clear();
+    requests.clear();
+  });
 
   testWidgets('Tampilan mengikuti mockup Tambah Pendidikan', (tester) async {
     await _pumpForm(tester);
@@ -128,9 +163,13 @@ void main() {
       );
     }
 
-    // Data valid tersimpan di PortfolioStore.
+    // Data dikirim ke Django (POST) lalu tersimpan di PortfolioStore.
+    expect(requests, hasLength(1));
+    expect(requests.single.method, 'POST');
+    expect(requests.single.url.toString(), 'http://test/api/v1/education/');
     final saved = PortfolioStore.instance.educations.value;
     expect(saved, hasLength(1));
+    expect(saved.first.id, 'edu-1');
     expect(saved.first.isCurrent, isTrue);
     expect(saved.first.courses, ['Algoritma', 'Basis Data']);
 
@@ -150,6 +189,7 @@ void main() {
 
   testWidgets('Mode edit mengisi field dan memperbarui data', (tester) async {
     final original = Education(
+      id: 'edu-1',
       institution: 'Universitas Indonesia',
       degree: 'S1 - Ilmu Komputer',
       level: DegreeLevel.bachelor,
@@ -172,6 +212,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Education Updated!'), findsOneWidget);
+    expect(requests.single.method, 'PATCH');
+    expect(
+      requests.single.url.toString(),
+      'http://test/api/v1/education/edu-1/',
+    );
     final list = PortfolioStore.instance.educations.value;
     expect(list, hasLength(1));
     expect(list.first.major, 'Sistem Informasi');

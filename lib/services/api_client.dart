@@ -99,12 +99,80 @@ class ApiClient {
     return Experience.fromJson(decoded);
   }
 
+  static const String _educationPath = '/api/v1/education/';
+
   Future<List<Education>> getEducations() {
-    return _getList<Education>('/api/v1/education/', Education.fromJson);
+    return _getList<Education>(_educationPath, Education.fromJson);
   }
 
+  Future<Education> createEducation(
+    Education education, {
+    required String token,
+  }) async {
+    final response = await _client.post(
+      _uri(_educationPath),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Token $token',
+      },
+      body: jsonEncode(education.toJson()),
+    );
+
+    _ensureSuccess(response);
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+
+    return Education.fromJson(decoded);
+  }
+
+  /// Memperbarui pendidikan yang sudah punya `id` (PATCH).
+  Future<Education> updateEducation(
+    Education education, {
+    required String token,
+  }) async {
+    final response = await _client.patch(
+      _uri('$_educationPath${education.id}/'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Token $token',
+      },
+      body: jsonEncode(education.toJson()),
+    );
+
+    _ensureSuccess(response);
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+
+    return Education.fromJson(decoded);
+  }
+
+  static const String _achievementsPath = '/api/v1/achievements/';
+
   Future<List<Achievement>> getAchievements() {
-    return _getList<Achievement>('/api/v1/achievements/', Achievement.fromJson);
+    return _getList<Achievement>(_achievementsPath, Achievement.fromJson);
+  }
+
+  Future<Achievement> createAchievement(
+    Achievement achievement, {
+    required String token,
+  }) async {
+    final response = await _client.post(
+      _uri(_achievementsPath),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Token $token',
+      },
+      body: jsonEncode(achievement.toJson()),
+    );
+
+    _ensureSuccess(response);
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+
+    return Achievement.fromJson(decoded);
   }
 
   Future<String> obtainToken(String username, String password) async {

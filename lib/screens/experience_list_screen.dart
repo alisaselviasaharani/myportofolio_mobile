@@ -1,17 +1,25 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/experience.dart';
 import 'package:myportofolio_mobile/screens/experience_detail_screen.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/widgets/experience_parts.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
+import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
+import 'package:myportofolio_mobile/widgets/portfolio_list_parts.dart';
 import 'package:provider/provider.dart';
 
-/// Daftar experience yang diambil dari backend Django lewat [ApiClient].
+/// Halaman "Pengalaman" dengan tampilan yang sama seperti Pendidikan: kolom
+/// pencarian, tombol filter tipe, kartu experience, dan tombol "Tambah".
 ///
+/// Datanya diambil dari backend Django lewat [ApiClient.getExperiences].
 /// Future dibuat di `initState()` (bukan di `build()`) agar permintaan HTTP
-/// tidak dikirim ulang setiap widget dibangun ulang. Tarik ke bawah
-/// ([RefreshIndicator]) atau tombol Retry untuk memuat ulang.
+/// tidak dikirim ulang setiap widget dibangun ulang. Tarik ke bawah atau
+/// tekan "Coba lagi" untuk memuat ulang; daftar juga dimuat ulang otomatis
+/// setelah kembali dari form Tambah.
 class ExperienceListScreen extends StatefulWidget {
   const ExperienceListScreen({super.key});
 
@@ -20,20 +28,88 @@ class ExperienceListScreen extends StatefulWidget {
 }
 
 class _ExperienceListScreenState extends State<ExperienceListScreen> {
+  /// Nilai filter untuk "semua tipe".
+  static const String _allTypes = '';
+
+  final _searchController = TextEditingController();
   late Future<List<Experience>> _experiencesFuture;
+  String _query = '';
+  String _typeFilter = _allTypes;
 
   @override
   void initState() {
     super.initState();
-    _experiencesFuture = context.read<ApiClient>().getExperiences();
+    _experiencesFuture = _fetch();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// Mengambil experience dari Django dan menyamakan jumlah di beranda.
+  Future<List<Experience>> _fetch() async {
+    final experiences = await context.read<ApiClient>().getExperiences();
+    PortfolioStore.instance.experienceCount.value = experiences.length;
+    return experiences;
   }
 
   Future<void> _reload() async {
-    final future = context.read<ApiClient>().getExperiences();
+    final future = _fetch();
+
     setState(() {
       _experiencesFuture = future;
     });
-    await future;
+
+    try {
+      await future;
+    } catch (_) {
+      // Error ditampilkan oleh FutureBuilder.
+    }
+  }
+
+  Future<void> _openForm() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ExperienceFormPage(popOnSuccess: true),
+      ),
+    );
+    if (mounted) {
+      await _reload();
+    }
+  }
+
+  void _openDetail(Experience experience) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExperienceDetailScreen(experience: experience),
+      ),
+    );
+  }
+
+  List<Experience> _apply(List<Experience> all) {
+    final query = _query.trim().toLowerCase();
+    return all.where((e) {
+      final matchesType = _typeFilter == _allTypes || e.type == _typeFilter;
+      final matchesQuery =
+          query.isEmpty ||
+          e.position.toLowerCase().contains(query) ||
+          e.company.toLowerCase().contains(query) ||
+          e.type.toLowerCase().contains(query);
+      return matchesType && matchesQuery;
+    }).toList();
+  }
+
+  /// Tipe yang ada pada data, diurutkan, untuk menu filter.
+  List<String> _typesIn(List<Experience> all) {
+    final types = {
+      for (final e in all)
+        if (e.type.isNotEmpty) e.type,
+    }.toList()..sort();
+    return [_allTypes, ...types];
   }
 
   @override
@@ -41,193 +117,119 @@ class _ExperienceListScreenState extends State<ExperienceListScreen> {
     final top = MediaQuery.paddingOf(context).top + oceanAppBarHeight;
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: oceanAppBar(title: 'My Experience'),
+      extendBody: true,
+      appBar: oceanAppBar(
+        title: 'Pengalaman',
+        centerTitle: true,
+        actions: const [PortfolioHeaderBadge()],
+      ),
       drawer: const LeftDrawer(selected: DrawerDestination.experienceList),
+      bottomNavigationBar: const OceanBottomBar(portfolioSelected: true),
+      floatingActionButton: PortfolioAddPill(
+        buttonKey: const Key('addExperienceButton'),
+        onPressed: _openForm,
+      ),
       body: OceanBackground(
-        child: FutureBuilder<List<Experience>>(
-          future: _experiencesFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, top, 16, 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Failed to load experiences: ${snapshot.error}',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: OceanColors.navy),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: _reload,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            final experiences = snapshot.data ?? const <Experience>[];
-
-            if (experiences.isEmpty) {
-              // Tetap bisa pull-to-refresh walau daftar kosong.
-              return RefreshIndicator(
-                onRefresh: _reload,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: SizedBox(
-                    height: MediaQuery.sizeOf(context).height * 0.8,
-                    child: const Center(
-                      child: Text(
-                        'No experiences found.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: OceanColors.navy,
-                        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: FutureBuilder<List<Experience>>(
+              future: _experiencesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return PortfolioErrorState(
+                    message: 'Gagal memuat pengalaman.',
+                    onRetry: _reload,
+                  );
+                }
+                final all = snapshot.data ?? const <Experience>[];
+                final items = _apply(all);
+                return Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(16, top + 6, 16, 6),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              key: const Key('searchField'),
+                              controller: _searchController,
+                              textInputAction: TextInputAction.search,
+                              decoration: oceanInputDecoration(
+                                hint: 'Cari pengalaman...',
+                                prefixIcon: const Icon(Icons.search),
+                                radius: 28,
+                              ),
+                              onChanged: (value) =>
+                                  setState(() => _query = value),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          PortfolioFilterButton<String>(
+                            value: _typeFilter,
+                            options: _typesIn(all),
+                            tooltip: 'Filter tipe',
+                            labelOf: (type) =>
+                                type == _allTypes ? 'Semua' : type,
+                            onSelected: (value) =>
+                                setState(() => _typeFilter = value),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ),
-              );
-            }
-
-            return RefreshIndicator(
-              onRefresh: _reload,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(16, top + 12, 16, 24),
-                    itemCount: experiences.length,
-                    itemBuilder: (context, index) {
-                      final experience = experiences[index];
-                      return _ExperienceCard(
-                        experience: experience,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ExperienceDetailScreen(experience: experience),
+                    if (_typeFilter != _allTypes)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(22, 0, 16, 4),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Filter: $_typeFilter',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: OceanColors.navy,
+                            ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-/// Kartu satu experience: posisi, perusahaan + tipe, dan deskripsi singkat.
-class _ExperienceCard extends StatelessWidget {
-  const _ExperienceCard({required this.experience, required this.onTap});
-
-  final Experience experience;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final subtitle = [
-      experience.company,
-      if (experience.type.isNotEmpty) experience.type,
-    ].join(' • ');
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.78),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
-        boxShadow: [
-          BoxShadow(
-            color: OceanColors.deep.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(22),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: OceanColors.cardPurple,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.work,
-                    color: Color(0xFF4A56C4),
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        experience.position,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                          color: OceanColors.navy,
-                        ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                          color: OceanColors.deep,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        experience.description,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  color: OceanColors.navy,
-                  size: 28,
-                ),
-              ],
+                    Expanded(
+                      child: items.isEmpty
+                          ? PortfolioEmptyState(
+                              icon: Icons.work_outline,
+                              message: all.isEmpty
+                                  ? 'Belum ada pengalaman.'
+                                  : 'Pengalaman tidak ditemukan.',
+                              hint: all.isEmpty
+                                  ? 'Tekan Tambah untuk menambahkannya.'
+                                  : 'Coba kata kunci atau filter lain.',
+                            )
+                          : RefreshIndicator(
+                              onRefresh: _reload,
+                              child: ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  8,
+                                  16,
+                                  200,
+                                ),
+                                itemCount: items.length,
+                                itemBuilder: (context, index) {
+                                  final experience = items[index];
+                                  return ExperienceCard(
+                                    experience: experience,
+                                    onTap: () => _openDetail(experience),
+                                  );
+                                },
+                              ),
+                            ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

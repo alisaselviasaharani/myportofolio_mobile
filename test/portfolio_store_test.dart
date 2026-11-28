@@ -132,4 +132,67 @@ void main() {
     expect(store.isFavorite(old), isFalse);
     expect(store.isFavorite(updated), isTrue);
   });
+
+  test('replaceEducations mempertahankan field lokal dan favorit via id', () {
+    final local = Education(
+      id: 'a',
+      institution: 'UI',
+      degree: 'S1 - Ilmu Komputer',
+      period: 'Sep 2023 – Sekarang',
+      isCurrent: true,
+      description: 'Deskripsi lokal',
+      courses: const ['Algoritma'],
+    );
+    store
+      ..addEducation(local)
+      ..toggleFavorite(local);
+
+    // Server mengirim data baru: periode sama untuk 'a', 'b' baru.
+    store.replaceEducations([
+      Education.fromJson(const {
+        'id': 'a',
+        'institution': 'UI',
+        'degree': 'S1 - Ilmu Komputer',
+        'period': 'Sep 2023 – Sekarang',
+      }),
+      Education.fromJson(const {
+        'id': 'b',
+        'institution': 'SMA 8',
+        'degree': 'SMA - IPA',
+        'period': 'Jul 2020 – Jun 2023',
+      }),
+    ]);
+
+    final list = store.educations.value;
+    expect(list.map((e) => e.id), ['a', 'b']);
+    expect(list.first.description, 'Deskripsi lokal');
+    expect(list.first.courses, ['Algoritma']);
+    expect(list.last.isCurrent, isFalse);
+    // Favorit menunjuk objek baru dengan id yang sama.
+    expect(store.favorites.value.single, same(list.first));
+  });
+
+  test('replaceEducations membuang field lokal jika periode berubah', () {
+    store.addEducation(
+      Education(
+        id: 'a',
+        institution: 'UI',
+        degree: 'S1 - Ilmu Komputer',
+        period: 'Sep 2023 – Sekarang',
+        isCurrent: true,
+        description: 'Lama',
+      ),
+    );
+    store.replaceEducations([
+      Education.fromJson(const {
+        'id': 'a',
+        'institution': 'UI',
+        'degree': 'S1 - Ilmu Komputer',
+        'period': 'Sep 2023 – Jun 2027',
+      }),
+    ]);
+
+    expect(store.educations.value.single.description, isEmpty);
+    expect(store.educations.value.single.isCurrent, isFalse);
+  });
 }

@@ -45,6 +45,49 @@ class PortfolioStore {
     educations.value = list;
   }
 
+  /// Mengganti seluruh daftar dengan data dari Django.
+  ///
+  /// Django hanya menyimpan institusi, jenjang/jurusan, periode, logo, dan
+  /// website. Field yang hanya ada di aplikasi (deskripsi, mata kuliah,
+  /// tanggal, status) dipertahankan dari data lokal dengan `id` yang sama
+  /// selama periodenya tidak berubah. Favorit ikut dipetakan lewat `id`.
+  void replaceEducations(List<Education> fetched) {
+    final local = {
+      for (final e in educations.value)
+        if (e.id != null) e.id!: e,
+    };
+    final merged = [
+      for (final server in fetched) _withLocalExtras(server, local[server.id]),
+    ];
+    final byId = {
+      for (final e in merged)
+        if (e.id != null) e.id!: e,
+    };
+    final favs = <Education>[];
+    for (final fav in favorites.value) {
+      if (fav.id == null) {
+        favs.add(fav);
+      } else if (byId[fav.id] != null) {
+        favs.add(byId[fav.id]!);
+      }
+    }
+    educations.value = merged;
+    favorites.value = favs;
+  }
+
+  static Education _withLocalExtras(Education server, Education? local) {
+    if (local == null || local.period != server.period) {
+      return server;
+    }
+    return server.copyWith(
+      isCurrent: local.isCurrent,
+      description: local.description,
+      courses: local.courses,
+      startDate: local.startDate,
+      endDate: local.endDate,
+    );
+  }
+
   bool isFavorite(Education education) => favorites.value.contains(education);
 
   /// Menambah [education] ke favorit, atau menghapusnya jika sudah ada.

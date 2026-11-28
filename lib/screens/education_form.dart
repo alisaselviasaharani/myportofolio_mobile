@@ -1,10 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/education.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/course_parser.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
+import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:myportofolio_mobile/widgets/date_form_field.dart';
 import 'package:myportofolio_mobile/widgets/labeled_field.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
@@ -12,13 +16,20 @@ import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
+import 'package:provider/provider.dart';
 
 /// Halaman "Tambah Pendidikan" (dan "Edit Pendidikan" jika [education]
 /// diberikan), mengikuti mockup: Institusi, Jenjang, Program Studi, Tanggal
 /// Mulai/Selesai, centang status mahasiswa, Deskripsi, dan Mata Kuliah Relevan.
 ///
-/// Saat mengedit, Simpan memperbarui data di [PortfolioStore] lalu menutup
-/// halaman dengan mengembalikan [Education] yang baru (`Navigator.pop`).
+/// Simpan mengirim data ke backend Django (POST untuk data baru, PATCH saat
+/// mengedit) dengan token, sehingga pengguna harus login lebih dulu. Setelah
+/// berhasil, [PortfolioStore] diperbarui; saat mengedit, halaman ditutup
+/// dengan mengembalikan [Education] yang baru (`Navigator.pop`).
+///
+/// Django hanya menyimpan institusi, jenjang/jurusan, periode, logo, dan
+/// website. Deskripsi, mata kuliah, tanggal, dan status tetap tampil selama
+/// aplikasi terbuka, tetapi tidak tersimpan di server.
 class EducationFormPage extends StatefulWidget {
   const EducationFormPage({super.key, this.education});
 
@@ -48,6 +59,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isCurrent = false;
+  bool _isSubmitting = false;
 
   bool get _isEditing => widget.education != null;
 
@@ -108,8 +120,9 @@ class _EducationFormPageState extends State<EducationFormPage> {
     });
   }
 
-  /// Dipanggil tombol Simpan: validasi dulu, dialog hanya jika semua valid.
-  void _submit() {
+  /// Dipanggil tombol Simpan: validasi, pastikan login, kirim ke Django, lalu
+  /// tampilkan dialog ringkasan jika berhasil.
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -118,7 +131,7 @@ class _EducationFormPageState extends State<EducationFormPage> {
     final end = _endDate;
     final major = _majorController.text.trim();
     final original = widget.education;
-    final education = Education(
+    var education = Education(
       id: original?.id,
       logo: original?.logo ?? '',
       institution: _institutionController.text.trim(),
@@ -133,11 +146,62 @@ class _EducationFormPageState extends State<EducationFormPage> {
       courses: parseCourses(_coursesController.text),
       website: original?.website ?? '',
     );
-    if (original == null) {
-      PortfolioStore.instance.addEducation(education);
-    } else {
-      PortfolioStore.instance.updateEducation(original, education);
+
+    // Pastikan sudah login (membuka LoginScreen jika belum).
+    final loggedIn = await ensureLoggedIn(context);
+    if (!loggedIn || !mounted) return;
+
+    final auth = context.read<AuthState>();
+    final apiClient = context.read<ApiClient>();
+    final token = auth.token;
+    if (token == null) return;
+
+    setState(() => _isSubmitting = true);
+    try {
+      final isNew = original == null || original.id == null;
+      final saved = isNew
+          ? await apiClient.createEducation(education, token: token)
+          : await apiClient.updateEducation(education, token: token);
+      if (!mounted) return;
+      // Ambil id (dan logo/website) dari server; sisanya tetap isian form.
+      education = education.copyWith(
+        id: saved.id,
+        logo: saved.logo,
+        website: saved.website,
+      );
+      if (original == null) {
+        PortfolioStore.instance.addEducation(education);
+      } else {
+        PortfolioStore.instance.updateEducation(original, education);
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      if (e.statusCode == 401) {
+        // Token tidak valid/kedaluwarsa: logout lalu minta login ulang.
+        await auth.logout();
+        if (!mounted) return;
+        showInfoSnackBar(context, 'Sesi berakhir. Silakan login kembali.');
+        await ensureLoggedIn(context);
+      } else {
+        showInfoSnackBar(
+          context,
+          'Gagal menyimpan pendidikan (status ${e.statusCode}).',
+        );
+      }
+      return;
+    } catch (_) {
+      if (!mounted) return;
+      showInfoSnackBar(
+        context,
+        'Tidak dapat terhubung ke server. Pastikan backend Django berjalan.',
+      );
+      return;
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
+    if (!mounted) return;
     showSummaryDialog(
       context,
       title: original == null ? 'Education Saved!' : 'Education Updated!',
@@ -395,15 +459,17 @@ class _EducationFormPageState extends State<EducationFormPage> {
                       // === Tombol Simpan ===
                       Padding(
                         padding: const EdgeInsets.fromLTRB(36, 18, 36, 0),
-                        child: OceanButton(
-                          label: 'Simpan',
-                          onPressed: _submit,
-                          colors: const [
-                            OceanColors.purpleStart,
-                            OceanColors.purpleEnd,
-                          ],
-                          shadowColor: OceanColors.purpleEnd,
-                        ),
+                        child: _isSubmitting
+                            ? const Center(child: CircularProgressIndicator())
+                            : OceanButton(
+                                label: 'Simpan',
+                                onPressed: _submit,
+                                colors: const [
+                                  OceanColors.purpleStart,
+                                  OceanColors.purpleEnd,
+                                ],
+                                shadowColor: OceanColors.purpleEnd,
+                              ),
                       ),
                     ],
                   ),
