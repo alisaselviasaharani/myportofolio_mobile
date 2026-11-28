@@ -157,8 +157,9 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
         setState(() => _isSubmitting = false);
       }
     }
+    // `saved` pasti terisi di sini: kegagalan di atas sudah `return`.
     final achievement = saved;
-    if (!mounted || achievement == null) return;
+    if (!mounted) return;
     showSummaryDialog(
       context,
       title: 'Certification Saved!',

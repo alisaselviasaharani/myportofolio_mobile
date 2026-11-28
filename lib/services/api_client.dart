@@ -32,6 +32,14 @@ class ApiClient {
     return Uri.parse('$cleanBaseUrl$cleanPath');
   }
 
+  /// Isi respons sebagai teks UTF-8.
+  ///
+  /// `response.body` memakai charset dari header, dan jatuh ke latin1 jika
+  /// tidak ada. Django REST Framework mengirim `application/json` tanpa
+  /// charset, jadi teks seperti "Sep 2023 – Jun 2027" bisa rusak. JSON selalu
+  /// UTF-8, maka byte-nya didecode langsung.
+  String _utf8Body(http.Response response) => utf8.decode(response.bodyBytes);
+
   void _ensureSuccess(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return;
@@ -51,7 +59,7 @@ class ApiClient {
 
     _ensureSuccess(response);
 
-    final decoded = jsonDecode(response.body);
+    final decoded = jsonDecode(_utf8Body(response));
 
     final List<dynamic> results;
 
@@ -94,7 +102,7 @@ class ApiClient {
 
     _ensureSuccess(response);
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = jsonDecode(_utf8Body(response)) as Map<String, dynamic>;
 
     return Experience.fromJson(decoded);
   }
@@ -121,7 +129,7 @@ class ApiClient {
 
     _ensureSuccess(response);
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = jsonDecode(_utf8Body(response)) as Map<String, dynamic>;
 
     return Education.fromJson(decoded);
   }
@@ -143,7 +151,7 @@ class ApiClient {
 
     _ensureSuccess(response);
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = jsonDecode(_utf8Body(response)) as Map<String, dynamic>;
 
     return Education.fromJson(decoded);
   }
@@ -170,7 +178,7 @@ class ApiClient {
 
     _ensureSuccess(response);
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = jsonDecode(_utf8Body(response)) as Map<String, dynamic>;
 
     return Achievement.fromJson(decoded);
   }
@@ -187,7 +195,7 @@ class ApiClient {
 
     _ensureSuccess(response);
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = jsonDecode(_utf8Body(response)) as Map<String, dynamic>;
 
     return decoded['token'] as String;
   }
@@ -205,7 +213,7 @@ class ApiClient {
 
     _ensureSuccess(response);
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = jsonDecode(_utf8Body(response)) as Map<String, dynamic>;
 
     return decoded['token'] as String;
   }

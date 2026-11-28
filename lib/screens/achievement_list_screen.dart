@@ -55,7 +55,11 @@ class _AchievementListScreenState extends State<AchievementListScreen> {
 
   Future<void> _reload() async {
     final future = _fetch();
-    setState(() => _achievementsFuture = future);
+    // Pakai blok `{}` (bukan `=>`): `=>` mengembalikan Future hasil assignment,
+    // dan setState melempar error jika callback-nya mengembalikan Future.
+    setState(() {
+      _achievementsFuture = future;
+    });
     try {
       await future;
     } catch (_) {

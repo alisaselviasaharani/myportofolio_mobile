@@ -36,9 +36,12 @@ Future<void> _pumpForm(WidgetTester tester, {Education? education}) async {
       requests.add(request);
       expect(request.headers['Authorization'], 'Token tok');
       final body = jsonDecode(request.body) as Map<String, dynamic>;
+      // charset UTF-8 eksplisit: periode memuat "–" yang tidak bisa di-encode
+      // sebagai latin1 (bawaan http.Response tanpa header charset).
       return http.Response(
         jsonEncode({...body, 'id': 'edu-1'}),
         request.method == 'POST' ? 201 : 200,
+        headers: const {'content-type': 'application/json; charset=utf-8'},
       );
     }),
   );
