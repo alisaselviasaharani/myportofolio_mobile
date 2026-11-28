@@ -1,7 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/forgot_password_screen.dart';
+import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/register_screen.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
+import 'package:myportofolio_mobile/services/google_auth.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/auth_errors.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
@@ -14,10 +16,24 @@ import 'package:provider/provider.dart';
 /// Halaman login: menukar username + password Django menjadi token DRF.
 ///
 /// Mengembalikan `true` lewat `Navigator.pop(context, true)` jika berhasil,
-/// sehingga bisa dipakai oleh `ensureLoggedIn`. Dari sini pengguna juga bisa
-/// membuka [RegisterScreen] dan [ForgotPasswordScreen].
+/// sehingga bisa dipakai oleh `ensureLoggedIn`. Jika [entry] `true` (pintu
+/// masuk aplikasi), berhasil login atau memilih tamu membuka beranda dan
+/// mengganti seluruh stack. Dari sini pengguna juga bisa membuka
+/// [RegisterScreen] dan [ForgotPasswordScreen], atau masuk dengan Google.
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({
+    super.key,
+    this.entry = false,
+    this.googleIdTokenProvider,
+  });
+
+  /// `true` jika halaman ini pintu masuk aplikasi (bukan dibuka dari halaman
+  /// lain yang menunggu hasil login).
+  final bool entry;
+
+  /// Pengambil ID token Google. Bawaannya [GoogleAuthService.getIdToken];
+  /// bisa diganti palsu pada test.
+  final GoogleIdTokenProvider? googleIdTokenProvider;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -48,9 +64,13 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // Backend memeriksa field `username`; isian "email atau username"
       // dikirim apa adanya.
-      await auth.login(_identifier.text.trim(), _password.text);
+      await auth.login(
+        _identifier.text.trim(),
+        _password.text,
+        remember: _remember,
+      );
       if (!mounted) return;
-      Navigator.pop(context, true);
+      _finish();
     } catch (e) {
       if (!mounted) return;
       showInfoSnackBar(
@@ -70,12 +90,74 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _open(Widget page) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  /// Login berhasil: dari pintu masuk membuka beranda, selain itu kembali
+  /// ke halaman pemanggil dengan hasil `true`.
+  void _finish() {
+    if (widget.entry) {
+      _openHome();
+    } else {
+      Navigator.pop(context, true);
+    }
   }
 
-  void _socialSoon(String provider) {
-    showInfoSnackBar(context, 'Masuk dengan $provider belum tersedia.');
+  void _openHome() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => MyHomePage()),
+      (route) => false,
+    );
+  }
+
+  /// Masuk dengan Google: ambil ID token lalu tukar ke token DRF. Dibatalkan
+  /// pengguna (token `null`) bukan error.
+  Future<void> _loginWithGoogle() async {
+    if (_isSubmitting) return;
+
+    final provider =
+        widget.googleIdTokenProvider ?? GoogleAuthService.getIdToken;
+    final auth = context.read<AuthState>();
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final idToken = await provider();
+      if (idToken == null) return;
+      await auth.loginWithGoogle(idToken, remember: _remember);
+      if (!mounted) return;
+      _finish();
+    } on GoogleAuthUnavailable catch (e) {
+      if (!mounted) return;
+      showInfoSnackBar(context, e.message);
+    } catch (e) {
+      if (!mounted) return;
+      showInfoSnackBar(
+        context,
+        authErrorMessage(
+          e,
+          failed: 'Masuk dengan Google gagal',
+          rejected: 'Akun Google tidak dapat diverifikasi.',
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  void _continueAsGuest() {
+    if (widget.entry) {
+      _openHome();
+    } else {
+      Navigator.pop(context, false);
+    }
+  }
+
+  void _open(Widget page) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
   }
 
   @override
@@ -170,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             SocialCircleButton(
               tooltip: 'Masuk dengan Google',
-              onTap: () => _socialSoon('Google'),
+              onTap: _loginWithGoogle,
               child: const Text(
                 'G',
                 style: TextStyle(
@@ -187,6 +269,15 @@ class _LoginScreenState extends State<LoginScreen> {
           question: 'Belum punya akun?',
           action: 'Daftar',
           onTap: () => _open(const RegisterScreen()),
+        ),
+        const SizedBox(height: 4),
+        Center(
+          child: AuthLink(
+            key: const Key('guestLink'),
+            label: 'Lanjut sebagai tamu',
+            underline: true,
+            onTap: _continueAsGuest,
+          ),
         ),
       ],
     );

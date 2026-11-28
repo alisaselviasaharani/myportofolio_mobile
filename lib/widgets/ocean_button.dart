@@ -9,11 +9,19 @@ class OceanButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.icon,
+    this.colors = const [OceanColors.buttonStart, OceanColors.buttonEnd],
+    this.shadowColor = OceanColors.deep,
   });
 
   final String label;
   final VoidCallback onPressed;
   final IconData? icon;
+
+  /// Warna gradasi tombol (kiri ke kanan); bawaan tosca.
+  final List<Color> colors;
+
+  /// Warna bayangan tombol.
+  final Color shadowColor;
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +29,11 @@ class OceanButton extends StatelessWidget {
       width: double.infinity,
       height: 56,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [OceanColors.buttonStart, OceanColors.buttonEnd],
-        ),
+        gradient: LinearGradient(colors: colors),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: OceanColors.deep.withValues(alpha: 0.35),
+            color: shadowColor.withValues(alpha: 0.35),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

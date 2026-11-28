@@ -51,4 +51,85 @@ void main() {
     expect(store.achievements.value, isEmpty);
     expect(store.experienceCount.value, 0);
   });
+
+  test('updateEducation mengganti item di posisi yang sama', () {
+    final old = Education(
+      institution: 'UI',
+      degree: 'S1 - Ilmu Komputer',
+      startDate: DateTime(2023, 9, 1),
+      period: 'Sep 2023',
+    );
+    final other = Education(
+      institution: 'SMA 8',
+      degree: 'SMA',
+      startDate: DateTime(2020, 7, 1),
+      period: 'Jul 2020',
+    );
+    store
+      ..addEducation(old)
+      ..addEducation(other);
+
+    final updated = Education(
+      institution: 'Universitas Indonesia',
+      degree: 'S1 - Ilmu Komputer',
+      startDate: DateTime(2023, 9, 1),
+      period: 'Sep 2023',
+    );
+    store.updateEducation(old, updated);
+
+    expect(store.educations.value, hasLength(2));
+    expect(store.educations.value.first.institution, 'Universitas Indonesia');
+    expect(store.educations.value.last.institution, 'SMA 8');
+  });
+
+  test('updateEducation mengabaikan item yang tidak ada', () {
+    final ghost = Education(
+      institution: 'X',
+      degree: 'S1',
+      startDate: DateTime(2023, 9, 1),
+      period: 'Sep 2023',
+    );
+    store.updateEducation(ghost, ghost);
+
+    expect(store.educations.value, isEmpty);
+  });
+
+  test('toggleFavorite menambah lalu menghapus favorit', () {
+    final e = Education(
+      institution: 'UI',
+      degree: 'S1',
+      startDate: DateTime(2023, 9, 1),
+      period: 'Sep 2023',
+    );
+
+    store.toggleFavorite(e);
+    expect(store.isFavorite(e), isTrue);
+    expect(store.favorites.value, hasLength(1));
+
+    store.toggleFavorite(e);
+    expect(store.isFavorite(e), isFalse);
+    expect(store.favorites.value, isEmpty);
+  });
+
+  test('updateEducation memindahkan status favorit ke versi baru', () {
+    final old = Education(
+      institution: 'UI',
+      degree: 'S1',
+      startDate: DateTime(2023, 9, 1),
+      period: 'Sep 2023',
+    );
+    final updated = Education(
+      institution: 'Universitas Indonesia',
+      degree: 'S1',
+      startDate: DateTime(2023, 9, 1),
+      period: 'Sep 2023',
+    );
+    store
+      ..addEducation(old)
+      ..toggleFavorite(old)
+      ..updateEducation(old, updated);
+
+    expect(store.isFavorite(old), isFalse);
+    expect(store.isFavorite(updated), isTrue);
+  });
 }

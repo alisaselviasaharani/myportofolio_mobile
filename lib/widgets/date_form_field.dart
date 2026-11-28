@@ -30,6 +30,7 @@ class DateFormField extends StatelessWidget {
     required this.onTap,
     required this.validator,
     this.isRequired = false,
+    this.trailingIcon = false,
     this.onClear,
     this.clearTooltip = 'Hapus tanggal',
   });
@@ -39,6 +40,9 @@ class DateFormField extends StatelessWidget {
   final VoidCallback onTap;
   final String? Function(String?) validator;
   final bool isRequired;
+
+  /// `true` menaruh ikon kalender di kanan (gaya mockup Pendidikan).
+  final bool trailingIcon;
   final VoidCallback? onClear;
   final String clearTooltip;
 
@@ -53,15 +57,20 @@ class DateFormField extends StatelessWidget {
         readOnly: true,
         onTap: onTap,
         decoration: oceanInputDecoration(
+          radius: trailingIcon ? 22 : 16,
           hint: 'Pilih tanggal',
-          prefixIcon: const Icon(Icons.calendar_today_outlined),
-          suffixIcon: clear == null
+          prefixIcon: trailingIcon
               ? null
-              : IconButton(
+              : const Icon(Icons.calendar_today_outlined),
+          suffixIcon: clear != null
+              ? IconButton(
                   tooltip: clearTooltip,
                   icon: const Icon(Icons.clear),
                   onPressed: clear,
-                ),
+                )
+              : (trailingIcon
+                    ? const Icon(Icons.calendar_today_outlined)
+                    : null),
         ),
         validator: validator,
       ),

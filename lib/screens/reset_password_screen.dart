@@ -11,7 +11,9 @@ import 'package:provider/provider.dart';
 /// Halaman Atur Ulang Kata Sandi: kata sandi baru dan konfirmasinya.
 ///
 /// [uid] dan [token] berasal dari tautan di email atur ulang. Jika halaman
-/// dibuka dari deep link, isi keduanya dari parameter tautan tersebut.
+/// dibuka dari deep link, isi keduanya dari parameter tautan tersebut. Jika
+/// salah satunya kosong, pengguna menempelkan "kode dari email" berbentuk
+/// `uid.token` pada kolom kode.
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key, this.uid = '', this.token = ''});
 
@@ -24,20 +26,38 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _code = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _isSubmitting = false;
 
   @override
   void dispose() {
+    _code.dispose();
     _password.dispose();
     _confirm.dispose();
     super.dispose();
   }
 
+  /// Kolom kode tampil jika [ResetPasswordScreen.uid] atau
+  /// [ResetPasswordScreen.token] belum ada.
+  bool get _needsCode => widget.uid.isEmpty || widget.token.isEmpty;
+
+  /// Memecah kode `uid.token` pada titik pertama (token Django memakai tanda
+  /// hubung, bukan titik). Mengembalikan `null` jika bentuknya tidak valid.
+  static ({String uid, String token})? _parseCode(String? value) {
+    final text = (value ?? '').trim();
+    final dot = text.indexOf('.');
+    if (dot <= 0 || dot == text.length - 1) return null;
+    return (uid: text.substring(0, dot), token: text.substring(dot + 1));
+  }
+
   Future<void> _submit() async {
     if (_isSubmitting || !_formKey.currentState!.validate()) return;
 
+    final parsed = _needsCode ? _parseCode(_code.text) : null;
+    final uid = parsed?.uid ?? widget.uid;
+    final token = parsed?.token ?? widget.token;
     final api = context.read<ApiClient>();
     setState(() {
       _isSubmitting = true;
@@ -45,8 +65,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     try {
       await api.confirmPasswordReset(
-        uid: widget.uid,
-        token: widget.token,
+        uid: uid,
+        token: token,
         newPassword: _password.text,
       );
       if (!mounted) return;
@@ -81,6 +101,24 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       subtitle: 'Buat kata sandi baru\nuntuk akunmu.',
       mascot: const PadlockMascot(width: 84),
       children: [
+        if (_needsCode) ...[
+          AuthTextField(
+            key: const Key('resetCodeField'),
+            controller: _code,
+            hint: 'Kode dari Email',
+            icon: Icons.vpn_key_outlined,
+            textInputAction: TextInputAction.next,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Kode dari email tidak boleh kosong!';
+              }
+              return _parseCode(value) == null
+                  ? 'Kode dari email tidak valid!'
+                  : null;
+            },
+          ),
+          const SizedBox(height: 12),
+        ],
         AuthTextField(
           key: const Key('resetPasswordField'),
           controller: _password,

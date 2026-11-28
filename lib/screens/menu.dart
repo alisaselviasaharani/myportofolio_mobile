@@ -5,6 +5,7 @@ import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
+import 'package:myportofolio_mobile/screens/education_list_screen.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:myportofolio_mobile/screens/skills_page.dart';
@@ -36,6 +37,13 @@ class MyHomePage extends StatelessWidget {
       OceanColors.cardYellow,
       iconColor: const Color(0xFF3F3DA8),
       pageBuilder: (context) => const EducationFormPage(),
+    ),
+    ItemHomepage(
+      'My Education',
+      Icons.history_edu,
+      OceanColors.cardLavender,
+      iconColor: const Color(0xFF6C4FD8),
+      pageBuilder: (context) => const EducationListScreen(),
     ),
     ItemHomepage(
       'Add Experience',
@@ -339,6 +347,12 @@ class _PortfolioSection extends StatelessWidget {
             iconColor: const Color(0xFF4A3FA8),
             title: 'Education',
             count: list.length,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const EducationListScreen(),
+              ),
+            ),
           ),
         ),
         ValueListenableBuilder<int>(
@@ -373,6 +387,7 @@ class _PortfolioTile extends StatelessWidget {
     required this.iconColor,
     required this.title,
     required this.count,
+    this.onTap,
   });
 
   final IconData icon;
@@ -380,6 +395,9 @@ class _PortfolioTile extends StatelessWidget {
   final Color iconColor;
   final String title;
   final int count;
+
+  /// Aksi saat ditekan; `null` menampilkan SnackBar "akan hadir".
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -402,10 +420,12 @@ class _PortfolioTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => showInfoSnackBar(
-            context,
-            'Daftar $title akan hadir di tahap berikutnya.',
-          ),
+          onTap:
+              onTap ??
+              () => showInfoSnackBar(
+                context,
+                'Daftar $title akan hadir di tahap berikutnya.',
+              ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(

@@ -42,3 +42,19 @@ String formatPeriod(DateTime start, DateTime? end) {
   }
   return '${formatDate(start)} - ${formatDate(end)}';
 }
+
+/// Periode bulan-tahun untuk daftar pendidikan, misalnya `Sep 2023 – Jun 2027`.
+///
+/// Jika [end] kosong: `Sep 2023 – Sekarang` saat [isCurrent], atau hanya
+/// `Sep 2023` jika sudah tidak aktif.
+String formatMonthPeriod(
+  DateTime start,
+  DateTime? end, {
+  bool isCurrent = false,
+}) {
+  final from = formatMonthYear(start);
+  if (end != null) {
+    return '$from – ${formatMonthYear(end)}';
+  }
+  return isCurrent ? '$from – Sekarang' : from;
+}

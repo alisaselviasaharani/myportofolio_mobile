@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/config.dart';
 import 'package:myportofolio_mobile/l10n/app_strings.dart';
@@ -19,32 +18,20 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   /// Menampilkan informasi fitur yang belum tersedia.
-  void _comingSoon(
-    BuildContext context,
-    String label,
-    String comingSoon,
-  ) {
-    showInfoSnackBar(
-      context,
-      '$label $comingSoon',
-    );
+  void _comingSoon(BuildContext context, String label, String comingSoon) {
+    showInfoSnackBar(context, '$label $comingSoon');
   }
 
   /// Membuka halaman pengaturan bahasa.
   void _openLanguage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const LanguageScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const LanguageScreen()),
     );
   }
 
   /// Menampilkan pilihan tema aplikasi.
-  void _showThemePicker(
-    BuildContext context,
-    AppStrings strings,
-  ) {
+  void _showThemePicker(BuildContext context, AppStrings strings) {
     final settings = context.read<AppSettings>();
 
     showDialog<void>(
@@ -54,33 +41,33 @@ class SettingsScreen extends StatelessWidget {
           title: Text(strings.appearance),
           content: StatefulBuilder(
             builder: (context, setDialogState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: AppThemeMode.values.map((mode) {
-                  final label = switch (mode) {
-                    AppThemeMode.system => strings.system,
-                    AppThemeMode.light => strings.light,
-                    AppThemeMode.dark => strings.dark,
-                  };
+              return RadioGroup<AppThemeMode>(
+                groupValue: settings.themeMode,
+                onChanged: (value) {
+                  if (value == null) return;
 
-                  return RadioListTile<AppThemeMode>(
-                    key: ValueKey(
-                      'themeOption_${mode.name}',
-                    ),
-                    value: mode,
-                    groupValue: settings.themeMode,
-                    title: Text(label),
-                    onChanged: (value) {
-                      if (value == null) return;
+                  settings.setThemeMode(value);
 
-                      settings.setThemeMode(value);
+                  setDialogState(() {});
 
-                      setDialogState(() {});
+                  Navigator.pop(dialogContext);
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: AppThemeMode.values.map((mode) {
+                    final label = switch (mode) {
+                      AppThemeMode.system => strings.system,
+                      AppThemeMode.light => strings.light,
+                      AppThemeMode.dark => strings.dark,
+                    };
 
-                      Navigator.pop(dialogContext);
-                    },
-                  );
-                }).toList(),
+                    return RadioListTile<AppThemeMode>(
+                      key: ValueKey('themeOption_${mode.name}'),
+                      value: mode,
+                      title: Text(label),
+                    );
+                  }).toList(),
+                ),
               );
             },
           ),
@@ -90,17 +77,12 @@ class SettingsScreen extends StatelessWidget {
   }
 
   /// Menampilkan informasi aplikasi.
-  void _showAbout(
-    BuildContext context,
-    AppStrings strings,
-  ) {
+  void _showAbout(BuildContext context, AppStrings strings) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('MyPortfolio'),
-        content: Text(
-          '${strings.version} $appVersion',
-        ),
+        content: Text('${strings.version} $appVersion'),
         actions: [
           TextButton(
             onPressed: () {
@@ -121,10 +103,7 @@ class SettingsScreen extends StatelessWidget {
     final auth = context.read<AuthState>();
 
     if (!auth.isLoggedIn) {
-      showInfoSnackBar(
-        context,
-        strings.notLoggedIn,
-      );
+      showInfoSnackBar(context, strings.notLoggedIn);
       return;
     }
 
@@ -154,10 +133,7 @@ class SettingsScreen extends StatelessWidget {
 
     if (!context.mounted) return;
 
-    await logoutAndShowLogin(
-      context,
-      message: strings.loggedOut,
-    );
+    await logoutAndShowLogin(context, message: strings.loggedOut);
   }
 
   @override
@@ -167,8 +143,7 @@ class SettingsScreen extends StatelessWidget {
     final settings = context.watch<AppSettings>();
     final themeMode = settings.themeMode;
 
-    final top =
-        MediaQuery.paddingOf(context).top + oceanAppBarHeight;
+    final top = MediaQuery.paddingOf(context).top + oceanAppBarHeight;
 
     final themeLabel = switch (themeMode) {
       AppThemeMode.system => strings.system,
@@ -180,24 +155,15 @@ class SettingsScreen extends StatelessWidget {
       extendBody: true,
       extendBodyBehindAppBar: true,
 
-      appBar: oceanAppBar(
-        title: strings.settings,
-      ),
+      appBar: oceanAppBar(title: strings.settings),
 
-      drawer: const LeftDrawer(
-        selected: DrawerDestination.settings,
-      ),
+      drawer: const LeftDrawer(selected: DrawerDestination.settings),
 
       bottomNavigationBar: const OceanBottomBar(),
 
       body: OceanBackground(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            18,
-            top + 10,
-            18,
-            120,
-          ),
+          padding: EdgeInsets.fromLTRB(18, top + 10, 18, 120),
           child: Column(
             children: [
               // Akun dan Profil.
@@ -240,10 +206,7 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.wb_sunny_outlined,
                 title: strings.appearance,
                 subtitle: themeLabel,
-                onTap: () => _showThemePicker(
-                  context,
-                  strings,
-                ),
+                onTap: () => _showThemePicker(context, strings),
               ),
 
               const SizedBox(height: 8),
@@ -253,10 +216,7 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.info_outline,
                 title: strings.about,
                 subtitle: '${strings.version} $appVersion',
-                onTap: () => _showAbout(
-                  context,
-                  strings,
-                ),
+                onTap: () => _showAbout(context, strings),
               ),
 
               const SizedBox(height: 8),
@@ -266,10 +226,7 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.delete_outline,
                 title: strings.logout,
                 destructive: true,
-                onTap: () => _logout(
-                  context,
-                  strings: strings,
-                ),
+                onTap: () => _logout(context, strings: strings),
               ),
             ],
           ),

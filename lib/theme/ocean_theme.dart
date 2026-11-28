@@ -36,6 +36,19 @@ class OceanColors {
   static const Color cardYellow = Color(0xFFFAEEBB);
   static const Color cardPurple = Color(0xFFDDDEFD);
   static const Color cardPink = Color(0xFFF0E4FE);
+
+  /// Ungu untuk tombol Simpan/Tambah dan menu aktif pada bottom bar.
+  static const Color purpleStart = Color(0xFF8D72E3);
+  static const Color purpleEnd = Color(0xFF6D55D2);
+  static const Color purpleSelected = Color(0xFF7B52D6);
+
+  /// Label status (Aktif/Lulus) dan teks status hijau.
+  static const Color chipGreenBg = Color(0xFFC8F0D8);
+  static const Color chipGreenText = Color(0xFF1B7F4A);
+  static const Color statusGreen = Color(0xFF1B8A3F);
+
+  /// Latar chip mata kuliah.
+  static const Color courseChip = Color(0xFFDCE0FB);
 }
 
 /// Tema aplikasi: skema warna dari [OceanColors], `primary` = [OceanColors.deep].
@@ -201,10 +214,11 @@ InputDecoration oceanInputDecoration({
   Widget? prefixIcon,
   Widget? suffixIcon,
   bool showCounter = false,
+  double radius = 16.0,
 }) {
   OutlineInputBorder border(Color color, [double width = 1.0]) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16.0),
+      borderRadius: BorderRadius.circular(radius),
       borderSide: BorderSide(color: color, width: width),
     );
   }
