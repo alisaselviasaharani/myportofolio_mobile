@@ -6,9 +6,12 @@ import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
+import 'package:myportofolio_mobile/screens/education_list_screen.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/screens/favorite_screen.dart';
 import 'package:myportofolio_mobile/screens/login_screen.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/screens/profile_screen.dart';
 import 'package:myportofolio_mobile/screens/skills_page.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/app_settings.dart';
@@ -19,6 +22,7 @@ import 'package:provider/provider.dart';
 /// Kartu aksi di beranda beserta halaman tujuannya.
 const List<(String, Type)> _cards = [
   ('Add Education', EducationFormPage),
+  ('My Education', EducationListScreen),
   ('Add Experience', ExperienceFormPage),
   ('Add Certification', AchievementFormPage),
   ('My Skills', SkillsPage),
@@ -181,6 +185,19 @@ void main() {
     expect(find.text('0 items'), findsNWidgets(2));
   });
 
+  testWidgets('Tile Education di My Portfolio membuka daftar pendidikan', (
+    WidgetTester tester,
+  ) async {
+    _useTallScreen(tester);
+    await tester.pumpWidget(MyApp(apiClient: ApiClient()));
+
+    await tester.ensureVisible(find.text('Education'));
+    await tester.tap(find.text('Education'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EducationListScreen), findsOneWidget);
+  });
+
   group('Halaman Skills dan Contact', () {
     testWidgets('Skills menampilkan tiga bagian kemampuan', (tester) async {
       _useTallScreen(tester);
@@ -275,6 +292,36 @@ void main() {
       await tester.tap(find.text('Add Education'));
       await tester.pumpAndSettle();
       expect(find.byType(EducationFormPage), findsOneWidget);
+    });
+
+    testWidgets('Tombol Portofolio membuka daftar pendidikan', (
+      WidgetTester tester,
+    ) async {
+      await pumpBar(tester);
+
+      await tester.tap(find.byTooltip('Portofolio'));
+      await tester.pumpAndSettle();
+      expect(find.byType(EducationListScreen), findsOneWidget);
+    });
+
+    testWidgets('Tombol Favorit membuka halaman favorit', (
+      WidgetTester tester,
+    ) async {
+      await pumpBar(tester);
+
+      await tester.tap(find.byTooltip('Favorit'));
+      await tester.pumpAndSettle();
+      expect(find.byType(FavoriteScreen), findsOneWidget);
+    });
+
+    testWidgets('Tombol Profil membuka halaman profil', (
+      WidgetTester tester,
+    ) async {
+      await pumpBar(tester);
+
+      await tester.tap(find.byTooltip('Profil'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ProfileScreen), findsOneWidget);
     });
 
     testWidgets('Tombol Beranda membuka halaman utama', (

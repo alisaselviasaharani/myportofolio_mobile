@@ -34,4 +34,23 @@ void main() {
       expect(text.length, lessThanOrEqualTo(50));
     });
   });
+
+  group('formatMonthPeriod', () {
+    final start = DateTime(2023, 9, 1);
+
+    test('dengan tanggal selesai memakai bulan-tahun dan en dash', () {
+      expect(
+        formatMonthPeriod(start, DateTime(2027, 6, 1)),
+        'Sep 2023 – Jun 2027',
+      );
+    });
+
+    test('masih aktif tanpa tanggal selesai menampilkan Sekarang', () {
+      expect(formatMonthPeriod(start, null, isCurrent: true), 'Sep 2023 – Sekarang');
+    });
+
+    test('tidak aktif tanpa tanggal selesai hanya bulan mulai', () {
+      expect(formatMonthPeriod(start, null), 'Sep 2023');
+    });
+  });
 }

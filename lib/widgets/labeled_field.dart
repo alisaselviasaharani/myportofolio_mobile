@@ -9,11 +9,15 @@ class LabeledField extends StatelessWidget {
     required this.label,
     required this.child,
     this.isRequired = false,
+    this.isOptional = false,
   });
 
   final String label;
   final Widget child;
   final bool isRequired;
+
+  /// Menambahkan teks ringan " (opsional)" setelah label.
+  final bool isOptional;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +41,14 @@ class LabeledField extends StatelessWidget {
                     const TextSpan(
                       text: ' *',
                       style: TextStyle(color: OceanColors.coral),
+                    ),
+                  if (isOptional)
+                    const TextSpan(
+                      text: ' (opsional)',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                 ],
               ),

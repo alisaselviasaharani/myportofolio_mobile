@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
+import 'package:myportofolio_mobile/screens/education_list_screen.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/settings_screen.dart';
@@ -20,6 +21,7 @@ import 'package:provider/provider.dart';
 enum DrawerDestination {
   home,
   education,
+  educationList,
   experience,
   certification,
   experienceList,
@@ -97,6 +99,12 @@ class LeftDrawer extends StatelessWidget {
                   title: 'Add Education',
                   selected: selected == DrawerDestination.education,
                   onTap: () => _go(context, const EducationFormPage()),
+                ),
+                _DrawerTile(
+                  icon: Icons.history_edu_outlined,
+                  title: 'My Education',
+                  selected: selected == DrawerDestination.educationList,
+                  onTap: () => _go(context, const EducationListScreen()),
                 ),
                 _DrawerTile(
                   icon: Icons.work_history_outlined,
