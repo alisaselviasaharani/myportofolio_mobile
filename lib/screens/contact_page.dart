@@ -1,6 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/utils/notify.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
 import 'package:myportofolio_mobile/widgets/illustrations.dart';
@@ -9,6 +11,7 @@ import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:myportofolio_mobile/widgets/page_parts.dart';
 import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
+import 'package:provider/provider.dart';
 
 /// Halaman "Contact Me": daftar kontak (Email, LinkedIn, GitHub)
 /// dan formulir "Send Me a Message" (nama, email, pesan maks. 500 karakter).
@@ -36,33 +39,73 @@ class _ContactPageState extends State<ContactPage> {
     super.dispose();
   }
 
-  /// Validasi dulu; dialog ringkasan hanya muncul jika semua isian valid.
-  void _submit() {
-    if (!_formKey.currentState!.validate()) {
+  bool _isSending = false;
+
+  /// Validasi, kirim ke backend (diteruskan ke email pemilik), lalu tampilkan
+  /// dialog ringkasan hanya jika pesan benar-benar terkirim.
+  Future<void> _submit() async {
+    if (_isSending || !_formKey.currentState!.validate()) {
       return;
     }
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final message = _messageController.text.trim();
+    final api = context.read<ApiClient>();
+
+    setState(() => _isSending = true);
+    try {
+      await api.sendContactMessage(name: name, email: email, message: message);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      showInfoSnackBar(context, _errorFor(e.statusCode));
+      return;
+    } catch (_) {
+      if (!mounted) return;
+      showInfoSnackBar(
+        context,
+        'Tidak dapat terhubung ke server. Pesan belum terkirim.',
+      );
+      return;
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+    if (!mounted) return;
+    pushNotification(context, 'Pesan terkirim', 'Pesan untuk pemilik portofolio sudah dikirim.');
     showSummaryDialog(
       context,
       title: 'Message Sent!',
       items: [
         SummaryItem(
           label: 'Nama Lengkap',
-          value: _nameController.text.trim(),
+          value: name,
           icon: Icons.person_outline,
         ),
-        SummaryItem(
-          label: 'Email',
-          value: _emailController.text.trim(),
-          icon: Icons.mail_outline,
-        ),
+        SummaryItem(label: 'Email', value: email, icon: Icons.mail_outline),
         SummaryItem(
           label: 'Pesan',
-          value: _messageController.text.trim(),
+          value: message,
           icon: Icons.chat_bubble_outline,
         ),
       ],
       onClosed: _resetForm,
     );
+  }
+
+  /// Pesan kesalahan sesuai status dari backend.
+  String _errorFor(int status) {
+    switch (status) {
+      case 400:
+        return 'Data pesan tidak valid. Periksa nama, email, dan pesan.';
+      case 404:
+        return 'Server belum mendukung form pesan. Perbarui backend Django.';
+      case 429:
+        return 'Terlalu banyak pesan. Coba lagi nanti.';
+      case 502:
+      case 503:
+        return 'Server belum bisa mengirim email. Pesan belum terkirim.';
+      default:
+        return 'Pesan gagal dikirim (status $status).';
+    }
   }
 
   void _resetForm() {
@@ -196,7 +239,7 @@ class _ContactPageState extends State<ContactPage> {
             ),
             const SizedBox(height: 12),
             OceanButton(
-              label: 'Kirim Pesan',
+              label: _isSending ? 'Mengirim...' : 'Kirim Pesan',
               icon: Icons.send,
               onPressed: _submit,
             ),

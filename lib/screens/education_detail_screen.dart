@@ -8,6 +8,7 @@ import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/institution_assets.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
+import 'package:myportofolio_mobile/widgets/delete_flow.dart';
 import 'package:myportofolio_mobile/widgets/education_parts.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
@@ -45,6 +46,22 @@ class _EducationDetailScreenState extends State<EducationDetailScreen> {
     );
     if (updated != null && mounted) {
       setState(() => _education = updated);
+    }
+  }
+
+  Future<void> _delete() async {
+    final deleted = await confirmAndDelete(
+      context,
+      title: 'Hapus pendidikan?',
+      message:
+          '${_education.institution} akan dihapus dari server dan tidak bisa '
+          'dikembalikan.',
+      successMessage: 'Pendidikan dihapus.',
+      request: (api, token) => api.deleteEducation(_education, token: token),
+    );
+    if (deleted && mounted) {
+      PortfolioStore.instance.removeEducation(_education);
+      Navigator.pop(context, true);
     }
   }
 
@@ -100,6 +117,7 @@ class _EducationDetailScreenState extends State<EducationDetailScreen> {
                           onFavorite: () =>
                               PortfolioStore.instance.toggleFavorite(e),
                           onEdit: _edit,
+                          onDelete: _delete,
                           onShare: _share,
                         ),
                       ),
@@ -167,6 +185,7 @@ class _Hero extends StatelessWidget {
     required this.isFavorite,
     required this.onFavorite,
     required this.onEdit,
+    required this.onDelete,
     required this.onShare,
   });
 
@@ -174,6 +193,7 @@ class _Hero extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback onFavorite;
   final VoidCallback onEdit;
+  final VoidCallback onDelete;
   final VoidCallback onShare;
 
   static const double _photoHeight = 160;
@@ -240,6 +260,13 @@ class _Hero extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 _RoundAction(
+                  key: const Key('deleteButton'),
+                  icon: Icons.delete_outline,
+                  tooltip: 'Hapus pendidikan',
+                  onTap: onDelete,
+                ),
+                const SizedBox(width: 8),
+                _RoundAction(
                   icon: Icons.ios_share,
                   tooltip: 'Bagikan',
                   onTap: onShare,
@@ -263,6 +290,7 @@ class _Hero extends StatelessWidget {
 
 class _RoundAction extends StatelessWidget {
   const _RoundAction({
+    super.key,
     required this.icon,
     required this.tooltip,
     required this.onTap,

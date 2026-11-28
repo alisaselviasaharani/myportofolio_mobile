@@ -5,6 +5,7 @@ import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/utils/notify.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
 import 'package:myportofolio_mobile/widgets/auth_guard.dart';
@@ -28,8 +29,19 @@ import 'package:provider/provider.dart';
 /// Setelah berhasil disimpan dan dialog ditutup, form ditutup: kembali ke
 /// halaman sebelumnya jika [popOnSuccess] (dipakai daftar agar memuat ulang),
 /// atau diganti dengan [ExperienceListScreen] agar hasilnya langsung terlihat.
+///
+/// Jika [experience] diberikan, form dalam mode edit: isian terisi data itu,
+/// Simpan mengirim PATCH, dan setelah dialog ditutup halaman kembali dengan
+/// [Experience] yang diperbarui (`Navigator.pop`).
 class ExperienceFormPage extends StatefulWidget {
-  const ExperienceFormPage({super.key, this.popOnSuccess = false});
+  const ExperienceFormPage({
+    super.key,
+    this.popOnSuccess = false,
+    this.experience,
+  });
+
+  /// Experience yang diedit; `null` berarti menambah baru.
+  final Experience? experience;
 
   /// `true` jika form dibuka dari daftar dan cukup kembali ke daftar itu.
   final bool popOnSuccess;
@@ -62,6 +74,27 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
 
   String _type = _types.first;
   bool _isSubmitting = false;
+
+  bool get _isEditing => widget.experience != null;
+
+  /// Pilihan tipe; tipe dari server yang tidak ada di daftar tetap ditampilkan.
+  List<String> get _typeOptions => _types.contains(_type)
+      ? _types
+      : [..._types, _type];
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.experience;
+    if (e != null) {
+      _positionController.text = e.position;
+      _companyController.text = e.company;
+      _descriptionController.text = e.description;
+      _periodController.text = e.period;
+      _linkController.text = e.link;
+      _type = e.type;
+    }
+  }
 
   @override
   void dispose() {
@@ -102,16 +135,34 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
     });
 
     try {
-      final created = await apiClient.createExperience(
-        newExperience,
-        token: token,
-      );
+      final original = widget.experience;
+      final created = original == null
+          ? await apiClient.createExperience(newExperience, token: token)
+          : await apiClient.updateExperience(
+              Experience(
+                id: original.id,
+                position: newExperience.position,
+                company: newExperience.company,
+                description: newExperience.description,
+                type: newExperience.type,
+                period: newExperience.period,
+                link: newExperience.link,
+              ),
+              token: token,
+            );
       if (!mounted) return;
-      PortfolioStore.instance.addExperience();
-      // 201 Created: tampilkan dialog konfirmasi.
+      if (original == null) {
+        PortfolioStore.instance.addExperience();
+      }
+      pushNotification(
+        context,
+        original == null ? 'Experience ditambahkan' : 'Experience diperbarui',
+        '${created.position} di ${created.company}',
+      );
+      // 201 Created / 200 OK: tampilkan dialog konfirmasi.
       showSummaryDialog(
         context,
-        title: 'Experience Saved!',
+        title: _isEditing ? 'Experience Updated!' : 'Experience Saved!',
         items: [
           SummaryItem(
             label: 'Posisi',
@@ -140,7 +191,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
           ),
           SummaryItem(label: 'Tautan', value: created.link, icon: Icons.link),
         ],
-        onClosed: _finish,
+        onClosed: () => _finish(created),
       );
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -171,11 +222,14 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
     }
   }
 
-  /// Menutup form setelah dialog sukses: kembali ke daftar yang membukanya,
-  /// atau membuka daftar experience agar data baru langsung terlihat.
-  void _finish() {
+  /// Menutup form setelah dialog sukses. Mode edit kembali ke halaman detail
+  /// dengan data baru; mode tambah kembali ke daftar yang membukanya, atau
+  /// membuka daftar experience agar data baru langsung terlihat.
+  void _finish(Experience saved) {
     if (!mounted) return;
-    if (widget.popOnSuccess) {
+    if (_isEditing) {
+      Navigator.pop(context, saved);
+    } else if (widget.popOnSuccess) {
       Navigator.pop(context, true);
     } else {
       Navigator.pushReplacement(
@@ -189,7 +243,9 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: oceanAppBar(title: 'Add Experience'),
+      appBar: oceanAppBar(
+        title: _isEditing ? 'Edit Experience' : 'Add Experience',
+      ),
       // Drawer yang sama dengan halaman utama
       drawer: const LeftDrawer(selected: DrawerDestination.experience),
       body: OceanBackground(
@@ -205,10 +261,12 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const FormHeader(
+                    FormHeader(
                       kind: FormKind.experience,
-                      title: 'Add Experience',
-                      subtitle: 'Fill in your experience details below.',
+                      title: _isEditing ? 'Edit Experience' : 'Add Experience',
+                      subtitle: _isEditing
+                          ? 'Update your experience details below.'
+                          : 'Fill in your experience details below.',
                     ),
                     FormCard(
                       children: [
@@ -286,9 +344,8 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                             decoration: oceanInputDecoration(
                               prefixIcon: const Icon(Icons.category_outlined),
                             ),
-                            // Nilai awal konstan agar reset() kembali ke default.
-                            initialValue: _types.first,
-                            items: _types
+                            initialValue: _type,
+                            items: _typeOptions
                                 .map(
                                   (type) => DropdownMenuItem(
                                     value: type,

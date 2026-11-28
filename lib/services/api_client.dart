@@ -5,6 +5,7 @@ import 'package:myportofolio_mobile/config.dart';
 import 'package:myportofolio_mobile/models/experience.dart';
 import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/models/achievement.dart';
+import 'package:myportofolio_mobile/models/user_profile.dart';
 
 class ApiException implements Exception {
   const ApiException(this.statusCode, this.message);
@@ -183,6 +184,79 @@ class ApiClient {
     return Achievement.fromJson(decoded);
   }
 
+  Map<String, String> _authJsonHeaders(String token) => {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=UTF-8',
+    'Authorization': 'Token $token',
+  };
+
+  Future<Map<String, dynamic>> _patchJson(
+    String path,
+    Map<String, dynamic> body, {
+    required String token,
+  }) async {
+    final response = await _client.patch(
+      _uri(path),
+      headers: _authJsonHeaders(token),
+      body: jsonEncode(body),
+    );
+
+    _ensureSuccess(response);
+
+    return jsonDecode(_utf8Body(response)) as Map<String, dynamic>;
+  }
+
+  /// DELETE dengan token; Django membalas 204 tanpa isi.
+  Future<void> _delete(String path, {required String token}) async {
+    final response = await _client.delete(
+      _uri(path),
+      headers: {'Accept': 'application/json', 'Authorization': 'Token $token'},
+    );
+
+    _ensureSuccess(response);
+  }
+
+  /// Memperbarui experience yang sudah punya `id` (PATCH).
+  Future<Experience> updateExperience(
+    Experience experience, {
+    required String token,
+  }) async {
+    final json = await _patchJson(
+      '$_experiencesPath${experience.id}/',
+      experience.toJson(),
+      token: token,
+    );
+    return Experience.fromJson(json);
+  }
+
+  Future<void> deleteExperience(Experience experience, {required String token}) {
+    return _delete('$_experiencesPath${experience.id}/', token: token);
+  }
+
+  Future<void> deleteEducation(Education education, {required String token}) {
+    return _delete('$_educationPath${education.id}/', token: token);
+  }
+
+  /// Memperbarui achievement yang sudah punya `id` (PATCH).
+  Future<Achievement> updateAchievement(
+    Achievement achievement, {
+    required String token,
+  }) async {
+    final json = await _patchJson(
+      '$_achievementsPath${achievement.id}/',
+      achievement.toJson(),
+      token: token,
+    );
+    return Achievement.fromJson(json);
+  }
+
+  Future<void> deleteAchievement(
+    Achievement achievement, {
+    required String token,
+  }) {
+    return _delete('$_achievementsPath${achievement.id}/', token: token);
+  }
+
   Future<String> obtainToken(String username, String password) async {
     final response = await _client.post(
       _uri('/api/v1/auth/token/'),
@@ -216,6 +290,61 @@ class ApiClient {
     final decoded = jsonDecode(_utf8Body(response)) as Map<String, dynamic>;
 
     return decoded['token'] as String;
+  }
+
+  /// Mengirim pesan dari form Contact Me; backend meneruskannya ke email
+  /// pemilik portofolio. Tidak butuh login.
+  Future<void> sendContactMessage({
+    required String name,
+    required String email,
+    required String message,
+  }) async {
+    final response = await _client.post(
+      _uri('/api/v1/contact/'),
+      headers: const {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({'name': name, 'email': email, 'message': message}),
+    );
+
+    _ensureSuccess(response);
+  }
+
+  /// Data akun milik [token].
+  Future<UserProfile> getProfile({required String token}) async {
+    final response = await _client.get(
+      _uri('/api/v1/auth/me/'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Token $token'},
+    );
+
+    _ensureSuccess(response);
+
+    return UserProfile.fromJson(
+      jsonDecode(_utf8Body(response)) as Map<String, dynamic>,
+    );
+  }
+
+  /// Mengubah nama lengkap akun.
+  Future<UserProfile> updateProfileName(
+    String fullName, {
+    required String token,
+  }) async {
+    final response = await _client.patch(
+      _uri('/api/v1/auth/me/'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Token $token',
+      },
+      body: jsonEncode({'full_name': fullName}),
+    );
+
+    _ensureSuccess(response);
+
+    return UserProfile.fromJson(
+      jsonDecode(_utf8Body(response)) as Map<String, dynamic>,
+    );
   }
 
   Future<void> logout({required String token}) async {

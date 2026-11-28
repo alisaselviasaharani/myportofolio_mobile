@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/achievement.dart';
+import 'package:myportofolio_mobile/screens/achievement_form.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/widgets/achievement_parts.dart';
+import 'package:myportofolio_mobile/widgets/delete_flow.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:myportofolio_mobile/widgets/portfolio_list_parts.dart';
@@ -13,13 +16,60 @@ import 'package:myportofolio_mobile/widgets/portfolio_list_parts.dart';
 /// Halaman "Detail Sertifikasi" bergaya sama dengan Detail Pendidikan:
 /// gambar achievement dari Django (atau panel gradasi jika kosong), tombol
 /// bagikan, lencana, tabel info (Kategori, Periode), dan Deskripsi.
-class AchievementDetailScreen extends StatelessWidget {
+///
+/// Tombol edit membuka [AchievementFormPage] berisi data ini (hasilnya
+/// langsung tampil di sini); tombol hapus meminta konfirmasi lalu menghapus
+/// data di Django dan menutup halaman.
+class AchievementDetailScreen extends StatefulWidget {
   const AchievementDetailScreen({super.key, required this.achievement});
 
   final Achievement achievement;
 
-  void _share(BuildContext context) {
-    final a = achievement;
+  @override
+  State<AchievementDetailScreen> createState() =>
+      _AchievementDetailScreenState();
+}
+
+class _AchievementDetailScreenState extends State<AchievementDetailScreen> {
+  late Achievement _achievement;
+
+  @override
+  void initState() {
+    super.initState();
+    _achievement = widget.achievement;
+  }
+
+  Future<void> _edit() async {
+    final updated = await Navigator.push<Achievement>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AchievementFormPage(achievement: _achievement),
+      ),
+    );
+    if (updated != null && mounted) {
+      setState(() => _achievement = updated);
+    }
+  }
+
+  Future<void> _delete() async {
+    final deleted = await confirmAndDelete(
+      context,
+      title: 'Hapus sertifikasi?',
+      message:
+          '"${_achievement.title}" akan dihapus dari server dan tidak bisa '
+          'dikembalikan.',
+      successMessage: 'Sertifikasi dihapus.',
+      request: (api, token) =>
+          api.deleteAchievement(_achievement, token: token),
+    );
+    if (deleted && mounted) {
+      PortfolioStore.instance.removeAchievement(_achievement);
+      Navigator.pop(context, true);
+    }
+  }
+
+  void _share() {
+    final a = _achievement;
     final text = [
       a.title,
       a.category.label,
@@ -32,7 +82,7 @@ class AchievementDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top + oceanAppBarHeight;
-    final a = achievement;
+    final a = _achievement;
     const gradient = [OceanColors.purpleStart, OceanColors.purpleEnd];
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -94,9 +144,21 @@ class AchievementDetailScreen extends StatelessWidget {
                         badge: AchievementBadge(achievement: a, size: 68),
                         actions: [
                           PortfolioRoundAction(
+                            key: const Key('editButton'),
+                            icon: Icons.edit_outlined,
+                            tooltip: 'Edit sertifikasi',
+                            onTap: _edit,
+                          ),
+                          PortfolioRoundAction(
+                            key: const Key('deleteButton'),
+                            icon: Icons.delete_outline,
+                            tooltip: 'Hapus sertifikasi',
+                            onTap: _delete,
+                          ),
+                          PortfolioRoundAction(
                             icon: Icons.ios_share,
                             tooltip: 'Bagikan',
-                            onTap: () => _share(context),
+                            onTap: _share,
                           ),
                         ],
                       ),

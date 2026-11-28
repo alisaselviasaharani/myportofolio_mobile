@@ -45,6 +45,16 @@ class PortfolioStore {
     educations.value = list;
   }
 
+  /// Menghapus [education] dari daftar dan favorit (dicocokkan lewat `id`
+  /// jika ada, selain itu lewat objeknya).
+  void removeEducation(Education education) {
+    bool same(Education e) =>
+        identical(e, education) ||
+        (education.id != null && e.id == education.id);
+    educations.value = educations.value.where((e) => !same(e)).toList();
+    favorites.value = favorites.value.where((e) => !same(e)).toList();
+  }
+
   /// Mengganti seluruh daftar dengan data dari Django.
   ///
   /// Django hanya menyimpan institusi, jenjang/jurusan, periode, logo, dan
@@ -103,6 +113,24 @@ class PortfolioStore {
 
   void addExperience() {
     experienceCount.value = experienceCount.value + 1;
+  }
+
+  /// Mengurangi jumlah experience (tidak pernah di bawah nol).
+  void removeExperience() {
+    if (experienceCount.value > 0) {
+      experienceCount.value = experienceCount.value - 1;
+    }
+  }
+
+  /// Menghapus [achievement] (dicocokkan lewat `id` jika ada).
+  void removeAchievement(Achievement achievement) {
+    achievements.value = achievements.value
+        .where(
+          (a) =>
+              !(identical(a, achievement) ||
+                  (achievement.id != null && a.id == achievement.id)),
+        )
+        .toList();
   }
 
   /// Mengosongkan semua data (dipakai pada test).

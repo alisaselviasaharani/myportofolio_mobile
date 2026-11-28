@@ -1,10 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/education.dart';
+import 'package:myportofolio_mobile/screens/education_list_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/course_parser.dart';
+import 'package:myportofolio_mobile/utils/notify.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
@@ -31,7 +33,12 @@ import 'package:provider/provider.dart';
 /// website. Deskripsi, mata kuliah, tanggal, dan status tetap tampil selama
 /// aplikasi terbuka, tetapi tidak tersimpan di server.
 class EducationFormPage extends StatefulWidget {
-  const EducationFormPage({super.key, this.education});
+  const EducationFormPage({super.key, this.education, this.popOnSuccess = false});
+
+  /// `true` jika form dibuka dari daftar pendidikan: setelah berhasil, form
+  /// ditutup dan kembali ke daftar tersebut. Jika `false` (dibuka dari menu),
+  /// form diganti dengan [EducationListScreen].
+  final bool popOnSuccess;
 
   /// Data yang diedit; `null` berarti menambah data baru.
   final Education? education;
@@ -202,6 +209,11 @@ class _EducationFormPageState extends State<EducationFormPage> {
       }
     }
     if (!mounted) return;
+    pushNotification(
+      context,
+      original == null ? 'Pendidikan ditambahkan' : 'Pendidikan diperbarui',
+      '${education.institution} - ${education.degree}',
+    );
     showSummaryDialog(
       context,
       title: original == null ? 'Education Saved!' : 'Education Updated!',
@@ -242,26 +254,22 @@ class _EducationFormPageState extends State<EducationFormPage> {
         if (!mounted) {
           return;
         }
-        if (original == null) {
-          _resetForm();
-        } else {
+        if (original != null) {
+          // Mode edit: kembali ke detail dengan data terbaru.
           Navigator.pop(context, education);
+        } else if (widget.popOnSuccess) {
+          Navigator.pop(context, true);
+        } else {
+          // Tambah baru dari menu: tampilkan daftar agar hasilnya terlihat.
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const EducationListScreen(),
+            ),
+          );
         }
       },
     );
-  }
-
-  /// Mengembalikan form dan semua state ke kondisi awal.
-  void _resetForm() {
-    _formKey.currentState!.reset();
-    setState(() {
-      _level = null;
-      _startDate = null;
-      _endDate = null;
-      _isCurrent = false;
-      _startDateController.clear();
-      _endDateController.clear();
-    });
   }
 
   @override

@@ -18,7 +18,7 @@ class SummaryItem {
 /// Tombol OK menutup dialog lalu memanggil [onClosed], misalnya untuk
 /// mereset form. Parameter [closeLabel], [closeIcon], dan [emoji] dipertahankan
 /// agar pemanggil lama tetap kompatibel, tetapi tidak lagi mengubah tampilan.
-void showSummaryDialog(
+Future<void> showSummaryDialog(
   BuildContext context, {
   required String title,
   required List<SummaryItem> items,
@@ -28,7 +28,10 @@ void showSummaryDialog(
   String emoji = '',
   VoidCallback? onClosed,
 }) {
-  showDialog<void>(
+  // [onClosed] dipanggil setelah dialog benar-benar tertutup, apa pun caranya
+  // (tombol OK, ketuk di luar dialog, atau tombol kembali), sehingga form
+  // selalu berpindah ke hasilnya.
+  return showDialog<void>(
     context: context,
     builder: (dialogContext) {
       // AlertDialog transparan: tampilan kartu dibuat sendiri di dalam content.
@@ -119,10 +122,7 @@ void showSummaryDialog(
                       Align(
                         alignment: Alignment.centerRight,
                         child: _OkButton(
-                          onPressed: () {
-                            Navigator.pop(dialogContext);
-                            onClosed?.call();
-                          },
+                          onPressed: () => Navigator.pop(dialogContext),
                         ),
                       ),
                     ],
@@ -146,7 +146,7 @@ void showSummaryDialog(
         ),
       );
     },
-  );
+  ).then((_) => onClosed?.call());
 }
 
 class _OkButton extends StatelessWidget {

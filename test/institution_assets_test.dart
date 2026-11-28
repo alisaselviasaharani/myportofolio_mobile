@@ -19,4 +19,22 @@ void main() {
     expect(institutionLogoAsset('Universitas Indonesia'), uiLogoAsset);
     expect(institutionPhotoAsset('Universitas Indonesia'), uiCampusAsset);
   });
+
+  test('SMAN 65 dikenali dengan berbagai penulisan', () {
+    expect(isSman65('SMAN 65 Jakarta'), isTrue);
+    expect(isSman65('SMA Negeri 65 Jakarta'), isTrue);
+    expect(isSman65('sma 65'), isTrue);
+    expect(isSman65('SMA Negeri 165 Jakarta'), isFalse);
+    expect(isSman65('SMA Negeri 8 Jakarta'), isFalse);
+  });
+
+  test('SMAN 65 mendapat logo dan foto gedung', () {
+    expect(institutionLogoAsset('SMA Negeri 65 Jakarta'), sma65LogoAsset);
+    expect(institutionPhotoAsset('SMAN 65'), sma65PhotoAsset);
+  });
+
+  test('MTsN 12 mendapat logo', () {
+    expect(institutionLogoAsset('MTsN 12 Jakarta'), mtsn12LogoAsset);
+    expect(institutionPhotoAsset('MTsN 12 Jakarta'), isNull);
+  });
 }
