@@ -119,41 +119,10 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _editName() async {
     final current = _profile?.fullName ?? '';
 
-    final controller = TextEditingController(text: current);
-
     final newName = await showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Ubah nama lengkap'),
-          content: TextField(
-            key: const Key('fullNameField'),
-            controller: controller,
-            maxLength: 150,
-            autofocus: true,
-            textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(labelText: 'Nama lengkap'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-              },
-              child: const Text('Batal'),
-            ),
-            TextButton(
-              key: const Key('saveNameButton'),
-              onPressed: () {
-                Navigator.pop(dialogContext, controller.text.trim());
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
-        );
-      },
+      builder: (dialogContext) => _EditNameDialog(initialName: current),
     );
-
-    controller.dispose();
 
     if (newName == null || newName.isEmpty || newName == current) {
       return;
@@ -337,6 +306,59 @@ class _AccountScreenState extends State<AccountScreen> {
           label: 'Keluar',
           icon: Icons.logout,
           onPressed: () => logoutAndShowLogin(context),
+        ),
+      ],
+    );
+  }
+}
+
+/// Dialog ubah nama.
+///
+/// Controller dimiliki dialog ini sendiri dan dibuang di `dispose()`, yaitu
+/// setelah animasi tutup dialog selesai. Membuangnya dari luar tepat setelah
+/// `showDialog` kembali membuat TextField yang masih tampil (saat animasi
+/// tutup) memakai controller yang sudah dibuang.
+class _EditNameDialog extends StatefulWidget {
+  const _EditNameDialog({required this.initialName});
+
+  final String initialName;
+
+  @override
+  State<_EditNameDialog> createState() => _EditNameDialogState();
+}
+
+class _EditNameDialogState extends State<_EditNameDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialName,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Ubah nama lengkap'),
+      content: TextField(
+        key: const Key('fullNameField'),
+        controller: _controller,
+        maxLength: 150,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(labelText: 'Nama lengkap'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Batal'),
+        ),
+        TextButton(
+          key: const Key('saveNameButton'),
+          onPressed: () => Navigator.pop(context, _controller.text.trim()),
+          child: const Text('Simpan'),
         ),
       ],
     );
