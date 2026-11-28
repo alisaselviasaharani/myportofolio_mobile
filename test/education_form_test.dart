@@ -95,7 +95,7 @@ void main() {
   testWidgets('Tampilan mengikuti mockup Tambah Pendidikan', (tester) async {
     await _pumpForm(tester);
 
-    expect(find.text('Tambah Pendidikan'), findsOneWidget);
+    expect(find.text('Tambah Pendidikan'), findsWidgets);
     expect(find.text('Pilih jenjang pendidikan'), findsOneWidget);
     expect(find.text('Masukkan nama institusi'), findsOneWidget);
     expect(find.text('Masih berstatus sebagai mahasiswa'), findsOneWidget);
@@ -222,7 +222,7 @@ void main() {
     PortfolioStore.instance.addEducation(original);
     await _pumpForm(tester, education: original);
 
-    expect(find.text('Edit Pendidikan'), findsOneWidget);
+    expect(find.text('Edit Pendidikan'), findsWidgets);
     expect(find.text('Sep 2023'), findsOneWidget);
     expect(find.text('Jun 2027'), findsOneWidget);
 

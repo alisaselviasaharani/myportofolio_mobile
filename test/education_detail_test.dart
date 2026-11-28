@@ -113,7 +113,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(EducationFormPage), findsOneWidget);
-    expect(find.text('Edit Pendidikan'), findsOneWidget);
+    expect(find.text('Edit Pendidikan'), findsWidgets);
     expect(find.text('Universitas Indonesia'), findsOneWidget);
   });
 }

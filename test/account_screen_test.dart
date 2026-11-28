@@ -16,7 +16,9 @@ Widget _app(ApiClient api, {String? token}) {
       Provider.value(value: api),
       // AccountScreen mengambil teks lewat AppStrings.of(context).
       ChangeNotifierProvider(create: (_) => AppSettings()),
-      ChangeNotifierProvider(create: (_) => AuthState(api, initialToken: token)),
+      ChangeNotifierProvider(
+        create: (_) => AuthState(api, initialToken: token),
+      ),
     ],
     child: const MaterialApp(home: AccountScreen()),
   );
@@ -27,6 +29,16 @@ http.Response _json(Object body, [int status = 200]) => http.Response(
   status,
   headers: const {'content-type': 'application/json; charset=utf-8'},
 );
+
+/// Melepas pohon widget sebelum tes selesai.
+///
+/// Tanpa ini, pohon widget (Overlay/route) tes sebelumnya masih hidup saat tes
+/// berikutnya memanggil `runApp`, lalu ukuran layar dikembalikan oleh teardown
+/// dan memicu error "Tried to build dirty widget in the wrong build scope".
+Future<void> _unmount(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pumpAndSettle();
+}
 
 void main() {
   void tall(WidgetTester tester) {
@@ -41,6 +53,8 @@ void main() {
 
     expect(find.text('Kamu belum login.'), findsOneWidget);
     expect(find.text('Login'), findsOneWidget);
+
+    await _unmount(tester);
   });
 
   testWidgets('sudah login menampilkan data akun dari server', (tester) async {
@@ -63,6 +77,8 @@ void main() {
     expect(find.byKey(const Key('accountName')), findsOneWidget);
     expect(find.text('Alisa Selvia'), findsOneWidget);
     expect(find.text('alisa@example.com'), findsOneWidget);
+
+    await _unmount(tester);
   });
 
   testWidgets('ubah nama mengirim PATCH dan memperbarui tampilan', (
@@ -100,6 +116,8 @@ void main() {
 
     expect(methods, ['GET', 'PATCH']);
     expect(find.text('Alisa S'), findsOneWidget);
+
+    await _unmount(tester);
   });
 
   testWidgets('server lama (404) menampilkan pesan yang jelas', (tester) async {
@@ -113,5 +131,7 @@ void main() {
 
     expect(find.byKey(const Key('accountError')), findsOneWidget);
     expect(find.textContaining('Perbarui backend'), findsOneWidget);
+
+    await _unmount(tester);
   });
 }

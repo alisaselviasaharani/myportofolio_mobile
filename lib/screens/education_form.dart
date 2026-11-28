@@ -12,10 +12,12 @@ import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
 import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:myportofolio_mobile/widgets/date_form_field.dart';
+import 'package:myportofolio_mobile/widgets/form_card.dart';
+import 'package:myportofolio_mobile/widgets/form_header.dart';
+import 'package:myportofolio_mobile/widgets/illustrations.dart';
 import 'package:myportofolio_mobile/widgets/labeled_field.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
-import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
 import 'package:provider/provider.dart';
@@ -124,6 +126,13 @@ class _EducationFormPageState extends State<EducationFormPage> {
         _endDate = picked;
         _endDateController.text = formatMonthYear(picked);
       }
+    });
+  }
+
+  void _clearEndDate() {
+    setState(() {
+      _endDate = null;
+      _endDateController.clear();
     });
   }
 
@@ -274,17 +283,13 @@ class _EducationFormPageState extends State<EducationFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final top = MediaQuery.paddingOf(context).top + oceanAppBarHeight;
     return Scaffold(
       extendBodyBehindAppBar: true,
-      extendBody: true,
       appBar: oceanAppBar(
         title: _isEditing ? 'Edit Pendidikan' : 'Tambah Pendidikan',
-        centerTitle: true,
       ),
       // Drawer yang sama dengan halaman lain.
       drawer: const LeftDrawer(selected: DrawerDestination.education),
-      bottomNavigationBar: const OceanBottomBar(portfolioSelected: true),
       body: OceanBackground(
         child: Form(
           key: _formKey,
@@ -295,192 +300,229 @@ class _EducationFormPageState extends State<EducationFormPage> {
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, top + 8, 16, 130),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // === Institusi ===
-                      LabeledField(
-                        label: 'Institusi',
-                        isRequired: true,
-                        child: TextFormField(
-                          key: const Key('institutionField'),
-                          controller: _institutionController,
-                          maxLength: _institutionMaxLength,
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.words,
-                          decoration: oceanInputDecoration(
-                            hint: 'Masukkan nama institusi',
-                            radius: 22,
-                          ),
-                          validator: (value) => FormValidators.requiredText(
-                            value,
-                            fieldName: 'Institusi',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FormHeader(
+                      kind: FormKind.education,
+                      title: _isEditing
+                          ? 'Edit Pendidikan'
+                          : 'Tambah Pendidikan',
+                      subtitle: _isEditing
+                          ? 'Perbarui data pendidikanmu di bawah ini.'
+                          : 'Isi data pendidikanmu di bawah ini.',
+                    ),
+                    FormCard(
+                      children: [
+                        // === Institusi ===
+                        LabeledField(
+                          label: 'Institusi',
+                          isRequired: true,
+                          child: TextFormField(
+                            key: const Key('institutionField'),
+                            controller: _institutionController,
                             maxLength: _institutionMaxLength,
-                          ),
-                        ),
-                      ),
-                      // === Jenjang ===
-                      LabeledField(
-                        label: 'Jenjang',
-                        isRequired: true,
-                        child: DropdownButtonFormField<DegreeLevel>(
-                          key: const Key('levelField'),
-                          isExpanded: true,
-                          decoration: oceanInputDecoration(radius: 22),
-                          icon: const Icon(Icons.keyboard_arrow_down),
-                          iconEnabledColor: OceanColors.navy,
-                          hint: const Text(
-                            'Pilih jenjang pendidikan',
-                            style: TextStyle(color: Colors.black38),
-                          ),
-                          // Nilai awal tetap agar reset() kembali ke kosong.
-                          initialValue: widget.education?.level,
-                          items: DegreeLevel.values
-                              .map(
-                                (level) => DropdownMenuItem(
-                                  value: level,
-                                  child: Text(level.fullLabel),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) => setState(() => _level = value),
-                          validator: (value) =>
-                              value == null ? 'Jenjang harus dipilih!' : null,
-                        ),
-                      ),
-                      // === Program Studi ===
-                      LabeledField(
-                        label: 'Program Studi',
-                        isRequired: true,
-                        child: TextFormField(
-                          key: const Key('majorField'),
-                          controller: _majorController,
-                          maxLength: _majorMaxLength,
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.words,
-                          decoration: oceanInputDecoration(
-                            hint: 'Masukkan program studi',
-                            radius: 22,
-                          ),
-                          validator: (value) => FormValidators.requiredText(
-                            value,
-                            fieldName: 'Program studi',
-                            maxLength: _majorMaxLength,
-                          ),
-                        ),
-                      ),
-                      // === Tanggal Mulai ===
-                      DateFormField(
-                        key: const Key('startDateField'),
-                        controller: _startDateController,
-                        label: 'Tanggal Mulai',
-                        isRequired: true,
-                        trailingIcon: true,
-                        onTap: () => _pickDate(isStart: true),
-                        validator: (_) => FormValidators.requiredDate(
-                          _startDate,
-                          fieldName: 'Tanggal mulai',
-                        ),
-                      ),
-                      // === Tanggal Selesai (opsional, tidak sebelum mulai) ===
-                      DateFormField(
-                        key: const Key('endDateField'),
-                        controller: _endDateController,
-                        label: 'Tanggal Selesai',
-                        trailingIcon: true,
-                        onTap: () => _pickDate(isStart: false),
-                        validator: (_) =>
-                            FormValidators.dateOrder(_startDate, _endDate),
-                      ),
-                      // === Status mahasiswa ===
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: InkWell(
-                          key: const Key('currentCheckbox'),
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () => setState(() => _isCurrent = !_isCurrent),
-                          child: Row(
-                            children: [
-                              Checkbox(
-                                value: _isCurrent,
-                                activeColor: OceanColors.deep,
-                                side: const BorderSide(
-                                  color: OceanColors.navy,
-                                  width: 2,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                onChanged: (value) =>
-                                    setState(() => _isCurrent = value ?? false),
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: oceanInputDecoration(
+                              hint: 'Masukkan nama institusi',
+                              prefixIcon: const Icon(
+                                Icons.account_balance_outlined,
                               ),
-                              const SizedBox(width: 4),
-                              const Expanded(
-                                child: Text(
-                                  'Masih berstatus sebagai mahasiswa',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
+                            ),
+                            validator: (value) => FormValidators.requiredText(
+                              value,
+                              fieldName: 'Institusi',
+                              maxLength: _institutionMaxLength,
+                            ),
+                          ),
+                        ),
+                        // === Jenjang ===
+                        LabeledField(
+                          label: 'Jenjang',
+                          isRequired: true,
+                          child: DropdownButtonFormField<DegreeLevel>(
+                            key: const Key('levelField'),
+                            isExpanded: true,
+                            decoration: oceanInputDecoration(
+                              prefixIcon: const Icon(Icons.school_outlined),
+                            ),
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            iconEnabledColor: OceanColors.navy,
+                            hint: const Text(
+                              'Pilih jenjang pendidikan',
+                              style: TextStyle(color: Colors.black38),
+                            ),
+                            // Nilai awal tetap agar reset() kembali ke kosong.
+                            initialValue: widget.education?.level,
+                            items: DegreeLevel.values
+                                .map(
+                                  (level) => DropdownMenuItem(
+                                    value: level,
+                                    child: Text(level.fullLabel),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) =>
+                                setState(() => _level = value),
+                            validator: (value) =>
+                                value == null ? 'Jenjang harus dipilih!' : null,
+                          ),
+                        ),
+                        // === Program Studi ===
+                        LabeledField(
+                          label: 'Program Studi',
+                          isRequired: true,
+                          child: TextFormField(
+                            key: const Key('majorField'),
+                            controller: _majorController,
+                            maxLength: _majorMaxLength,
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: oceanInputDecoration(
+                              hint: 'Masukkan program studi',
+                              prefixIcon: const Icon(Icons.menu_book_outlined),
+                            ),
+                            validator: (value) => FormValidators.requiredText(
+                              value,
+                              fieldName: 'Program studi',
+                              maxLength: _majorMaxLength,
+                            ),
+                          ),
+                        ),
+                        // === Tanggal Mulai ===
+                        DateFormField(
+                          key: const Key('startDateField'),
+                          controller: _startDateController,
+                          label: 'Tanggal Mulai',
+                          isRequired: true,
+                          onTap: () => _pickDate(isStart: true),
+                          validator: (_) => FormValidators.requiredDate(
+                            _startDate,
+                            fieldName: 'Tanggal mulai',
+                          ),
+                        ),
+                        // === Tanggal Selesai (opsional, tidak sebelum mulai) ===
+                        DateFormField(
+                          key: const Key('endDateField'),
+                          controller: _endDateController,
+                          label: 'Tanggal Selesai (opsional)',
+                          onTap: () => _pickDate(isStart: false),
+                          onClear: _endDate == null ? null : _clearEndDate,
+                          clearTooltip: 'Hapus tanggal selesai',
+                          validator: (_) =>
+                              FormValidators.dateOrder(_startDate, _endDate),
+                        ),
+                        // Pratinjau periode yang akan disimpan.
+                        if (_startDate != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: OceanColors.aqua.withValues(alpha: 0.6),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'Periode: ${formatMonthPeriod(_startDate!, _endDate, isCurrent: _isCurrent)}',
+                                style: const TextStyle(
+                                  color: OceanColors.deep,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        // === Status mahasiswa ===
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: InkWell(
+                            key: const Key('currentCheckbox'),
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () =>
+                                setState(() => _isCurrent = !_isCurrent),
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                  value: _isCurrent,
+                                  activeColor: OceanColors.deep,
+                                  side: const BorderSide(
                                     color: OceanColors.navy,
+                                    width: 2,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  onChanged: (value) => setState(
+                                    () => _isCurrent = value ?? false,
                                   ),
                                 ),
+                                const SizedBox(width: 4),
+                                const Expanded(
+                                  child: Text(
+                                    'Masih berstatus sebagai mahasiswa',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: OceanColors.navy,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // === Deskripsi (opsional) ===
+                        LabeledField(
+                          label: 'Deskripsi',
+                          isOptional: true,
+                          child: TextFormField(
+                            key: const Key('descriptionField'),
+                            controller: _descriptionController,
+                            maxLength: _descriptionMaxLength,
+                            minLines: 3,
+                            maxLines: 5,
+                            keyboardType: TextInputType.multiline,
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: oceanInputDecoration(
+                              hint: 'Ceritakan singkat tentang pendidikan ini...',
+                              showCounter: true,
+                            ),
+                          ),
+                        ),
+                        // === Mata Kuliah Relevan (opsional) ===
+                        LabeledField(
+                          label: 'Mata Kuliah Relevan',
+                          isOptional: true,
+                          child: TextFormField(
+                            key: const Key('coursesField'),
+                            controller: _coursesController,
+                            textInputAction: TextInputAction.done,
+                            decoration: oceanInputDecoration(
+                              hint: 'Tambahkan mata kuliah, pisahkan dengan koma',
+                              prefixIcon: const Icon(
+                                Icons.library_books_outlined,
                               ),
-                            ],
+                            ),
+                            validator: validateCourses,
                           ),
                         ),
-                      ),
-                      // === Deskripsi (opsional) ===
-                      LabeledField(
-                        label: 'Deskripsi',
-                        isOptional: true,
-                        child: TextFormField(
-                          key: const Key('descriptionField'),
-                          controller: _descriptionController,
-                          maxLength: _descriptionMaxLength,
-                          minLines: 3,
-                          maxLines: 5,
-                          keyboardType: TextInputType.multiline,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration: oceanInputDecoration(
-                            hint: 'Ceritakan singkat tentang pendidikan ini...',
-                            radius: 20,
-                          ),
-                        ),
-                      ),
-                      // === Mata Kuliah Relevan (opsional) ===
-                      LabeledField(
-                        label: 'Mata Kuliah Relevan',
-                        isOptional: true,
-                        child: TextFormField(
-                          key: const Key('coursesField'),
-                          controller: _coursesController,
-                          textInputAction: TextInputAction.done,
-                          decoration: oceanInputDecoration(
-                            hint: 'Tambahkan mata kuliah, pisahkan dengan koma',
-                            radius: 22,
-                          ),
-                          validator: validateCourses,
-                        ),
-                      ),
-                      // === Tombol Simpan ===
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(36, 18, 36, 0),
-                        child: _isSubmitting
-                            ? const Center(child: CircularProgressIndicator())
-                            : OceanButton(
-                                label: 'Simpan',
-                                onPressed: _submit,
-                                colors: const [
-                                  OceanColors.purpleStart,
-                                  OceanColors.purpleEnd,
-                                ],
-                                shadowColor: OceanColors.purpleEnd,
-                              ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                    // === Tombol Simpan ===
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
+                      child: _isSubmitting
+                          ? const Center(child: CircularProgressIndicator())
+                          : OceanButton(
+                              label: 'Simpan',
+                              icon: Icons.save_outlined,
+                              onPressed: _submit,
+                            ),
+                    ),
+                  ],
                 ),
               ),
             ),

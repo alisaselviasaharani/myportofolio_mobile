@@ -161,7 +161,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(EducationFormPage), findsOneWidget);
-    expect(find.text('Tambah Pendidikan'), findsOneWidget);
+    expect(find.text('Tambah Pendidikan'), findsWidgets);
   });
 
   testWidgets('Memuat pendidikan dari Django saat halaman dibuka', (
