@@ -18,7 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      # Dibaca dari Variable, atau dari Secret jika Variable tidak ada.
+      API_BASE_URL: ${{ vars.API_BASE_URL || secrets.API_BASE_URL }}
     steps:
       - uses: actions/checkout@v4
 

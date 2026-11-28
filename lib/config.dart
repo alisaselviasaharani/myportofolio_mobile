@@ -15,7 +15,9 @@ const String appVersion = '2.0.0';
 /// Web Client ID dari Google Cloud Console untuk "Masuk dengan Google".
 ///
 /// Nilainya harus sama dengan salah satu `GOOGLE_CLIENT_IDS` di backend.
-/// Berikan lewat `--dart-define=GOOGLE_SERVER_CLIENT_ID=xxxx.apps.googleusercontent.com`.
+/// Nilai bawaan di bawah adalah Client ID "MyPortfolio Web"; bisa diganti lewat
+/// `--dart-define=GOOGLE_SERVER_CLIENT_ID=xxxx.apps.googleusercontent.com`.
 const String googleServerClientId = String.fromEnvironment(
   'GOOGLE_SERVER_CLIENT_ID',
+  defaultValue: '492898133732-ablinjnv58q1r9stjgoaj3jhld5d87i9.apps.googleusercontent.com',
 );
