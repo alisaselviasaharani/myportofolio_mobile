@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/experience.dart';
+import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
@@ -23,8 +24,15 @@ import 'package:provider/provider.dart';
 /// opsional (tautan harus URL `http`/`https` jika diisi). Data dikirim ke
 /// backend Django (`POST /api/v1/experiences/`) dengan token, sehingga
 /// pengguna harus login lebih dulu.
+///
+/// Setelah berhasil disimpan dan dialog ditutup, form ditutup: kembali ke
+/// halaman sebelumnya jika [popOnSuccess] (dipakai daftar agar memuat ulang),
+/// atau diganti dengan [ExperienceListScreen] agar hasilnya langsung terlihat.
 class ExperienceFormPage extends StatefulWidget {
-  const ExperienceFormPage({super.key});
+  const ExperienceFormPage({super.key, this.popOnSuccess = false});
+
+  /// `true` jika form dibuka dari daftar dan cukup kembali ke daftar itu.
+  final bool popOnSuccess;
 
   @override
   State<ExperienceFormPage> createState() => _ExperienceFormPageState();
@@ -132,7 +140,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
           ),
           SummaryItem(label: 'Tautan', value: created.link, icon: Icons.link),
         ],
-        onClosed: _resetForm,
+        onClosed: _finish,
       );
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -163,10 +171,18 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
     }
   }
 
-  /// Mengembalikan form dan semua state ke kondisi awal.
-  void _resetForm() {
-    _formKey.currentState!.reset();
-    setState(() => _type = _types.first);
+  /// Menutup form setelah dialog sukses: kembali ke daftar yang membukanya,
+  /// atau membuka daftar experience agar data baru langsung terlihat.
+  void _finish() {
+    if (!mounted) return;
+    if (widget.popOnSuccess) {
+      Navigator.pop(context, true);
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ExperienceListScreen()),
+      );
+    }
   }
 
   @override

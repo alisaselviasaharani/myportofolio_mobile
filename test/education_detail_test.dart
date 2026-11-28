@@ -1,9 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/education_detail_screen.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
+import 'package:provider/provider.dart';
 
 final Education _ui = Education(
   institution: 'Universitas Indonesia',
@@ -22,8 +26,21 @@ Future<void> _pumpDetail(WidgetTester tester, Education education) async {
   tester.view.physicalSize = const Size(800, 2000);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
+  // Form edit butuh ApiClient dan AuthState (server tidak dipanggil di sini).
+  final client = ApiClient(
+    baseUrl: 'http://test',
+    client: MockClient((request) async => throw StateError('tidak dipakai')),
+  );
   await tester.pumpWidget(
-    MaterialApp(home: EducationDetailScreen(education: education)),
+    MultiProvider(
+      providers: [
+        Provider.value(value: client),
+        ChangeNotifierProvider(
+          create: (_) => AuthState(client, initialToken: 'tok'),
+        ),
+      ],
+      child: MaterialApp(home: EducationDetailScreen(education: education)),
+    ),
   );
 }
 

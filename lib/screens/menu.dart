@@ -3,6 +3,7 @@ import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/achievement.dart';
 import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/achievement_form.dart';
+import 'package:myportofolio_mobile/screens/achievement_list_screen.dart';
 import 'package:myportofolio_mobile/screens/contact_page.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/education_list_screen.dart';
@@ -363,6 +364,12 @@ class _PortfolioSection extends StatelessWidget {
             iconColor: const Color(0xFF4A56C4),
             title: 'Experience',
             count: count,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ExperienceListScreen(),
+              ),
+            ),
           ),
         ),
         ValueListenableBuilder<List<Achievement>>(
@@ -373,6 +380,12 @@ class _PortfolioSection extends StatelessWidget {
             iconColor: const Color(0xFF9A3FC4),
             title: 'Certifications',
             count: list.length,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AchievementListScreen(),
+              ),
+            ),
           ),
         ),
       ],

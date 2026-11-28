@@ -104,15 +104,52 @@ class Education {
         ? DegreeLevel.fromLabel(degree)
         : DegreeLevel.fromLabel(degree.substring(0, separator));
     final major = separator == -1 ? '' : degree.substring(separator + 3);
+    final period = json['period']?.toString() ?? '';
     return Education(
       id: json['id']?.toString(),
       institution: json['institution']?.toString() ?? '',
       degree: degree,
-      period: json['period']?.toString() ?? '',
+      period: period,
       logo: json['logo']?.toString() ?? '',
       website: json['website']?.toString() ?? '',
       level: level ?? DegreeLevel.bachelor,
       major: major,
+      // Django tidak menyimpan status; periode yang berakhir "Sekarang"
+      // (format dari form) berarti masih aktif.
+      isCurrent: period.toLowerCase().contains('sekarang'),
+    );
+  }
+
+  /// Salinan dengan sebagian field diganti.
+  Education copyWith({
+    String? id,
+    String? institution,
+    String? degree,
+    String? period,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? logo,
+    String? website,
+    DegreeLevel? level,
+    String? major,
+    bool? isCurrent,
+    String? description,
+    List<String>? courses,
+  }) {
+    return Education(
+      id: id ?? this.id,
+      institution: institution ?? this.institution,
+      degree: degree ?? this.degree,
+      period: period ?? this.period,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      logo: logo ?? this.logo,
+      website: website ?? this.website,
+      level: level ?? this.level,
+      major: major ?? this.major,
+      isCurrent: isCurrent ?? this.isCurrent,
+      description: description ?? this.description,
+      courses: courses ?? this.courses,
     );
   }
 

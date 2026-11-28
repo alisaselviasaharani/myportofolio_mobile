@@ -3,11 +3,15 @@ import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/education_detail_screen.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/widgets/education_parts.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
+import 'package:myportofolio_mobile/widgets/portfolio_list_parts.dart';
+import 'package:provider/provider.dart';
 
 /// Filter status pada daftar pendidikan.
 enum _StatusFilter {
@@ -24,8 +28,9 @@ enum _StatusFilter {
 /// kartu riwayat pendidikan (logo, jenjang, periode, status), dan tombol
 /// "Tambah" ungu di atas latar penyu.
 ///
-/// Data dibaca dari [PortfolioStore.educations] sehingga daftar ikut berubah
-/// setelah form disimpan.
+/// Data diambil dari backend Django lewat [ApiClient.getEducations] saat
+/// halaman dibuka (tarik ke bawah untuk memuat ulang), disimpan di
+/// [PortfolioStore.educations], dan daftar ikut berubah setelah form disimpan.
 class EducationListScreen extends StatefulWidget {
   const EducationListScreen({super.key});
 
@@ -37,6 +42,48 @@ class _EducationListScreenState extends State<EducationListScreen> {
   final _searchController = TextEditingController();
   String _query = '';
   _StatusFilter _filter = _StatusFilter.all;
+  bool _loading = true;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  /// Mengambil pendidikan dari Django lalu menggabungkannya ke store.
+  Future<void> _load() async {
+    final api = context.read<ApiClient>();
+    try {
+      final fetched = await api.getEducations();
+      PortfolioStore.instance.replaceEducations(fetched);
+      if (mounted) {
+        setState(() => _failed = false);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _failed = true);
+        if (PortfolioStore.instance.educations.value.isNotEmpty) {
+          showInfoSnackBar(
+            context,
+            'Gagal memuat dari server. Menampilkan data yang ada.',
+          );
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  Future<void> _retry() async {
+    setState(() {
+      _loading = true;
+      _failed = false;
+    });
+    await _load();
+  }
 
   @override
   void dispose() {
@@ -142,6 +189,15 @@ class _EducationListScreenState extends State<EducationListScreen> {
                     valueListenable: PortfolioStore.instance.educations,
                     builder: (context, all, child) {
                       final items = _apply(all);
+                      if (all.isEmpty && _loading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (all.isEmpty && _failed) {
+                        return PortfolioErrorState(
+                          message: 'Gagal memuat pendidikan.',
+                          onRetry: _retry,
+                        );
+                      }
                       if (items.isEmpty) {
                         return _EmptyState(
                           message: all.isEmpty
@@ -152,16 +208,20 @@ class _EducationListScreenState extends State<EducationListScreen> {
                               : 'Coba kata kunci atau filter lain.',
                         );
                       }
-                      return ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 200),
-                        itemCount: items.length,
-                        itemBuilder: (context, index) {
-                          final education = items[index];
-                          return EducationCard(
-                            education: education,
-                            onTap: () => _openDetail(education),
-                          );
-                        },
+                      return RefreshIndicator(
+                        onRefresh: _load,
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 200),
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            final education = items[index];
+                            return EducationCard(
+                              education: education,
+                              onTap: () => _openDetail(education),
+                            );
+                          },
+                        ),
                       );
                     },
                   ),

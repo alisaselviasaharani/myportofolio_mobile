@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
@@ -26,6 +27,10 @@ Future<void> _pumpForm(WidgetTester tester) async {
   final client = ApiClient(
     baseUrl: 'http://test',
     client: MockClient((request) async {
+      // Daftar yang terbuka setelah berhasil menyimpan memuat data lewat GET.
+      if (request.method == 'GET') {
+        return http.Response('[]', 200);
+      }
       expect(request.headers['Authorization'], 'Token tok');
       final body = jsonDecode(request.body) as Map<String, dynamic>;
       return http.Response(jsonEncode({...body, 'id': 'abc'}), 201);
@@ -85,7 +90,7 @@ void main() {
     expect(find.byType(Dialog), findsNothing);
   });
 
-  testWidgets('Input valid menampilkan dialog ringkasan, OK mereset form', (
+  testWidgets('Input valid menampilkan dialog, OK membuka daftar', (
     tester,
   ) async {
     await _pumpForm(tester);
@@ -116,10 +121,52 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
+    // Form ditutup dan diganti daftar experience.
     expect(find.byType(Dialog), findsNothing);
-    final position = tester.widget<EditableText>(
-      find.descendant(of: _positionField, matching: find.byType(EditableText)),
+    expect(find.byType(ExperienceFormPage), findsNothing);
+    expect(find.byType(ExperienceListScreen), findsOneWidget);
+  });
+
+  testWidgets('Dibuka dari daftar: OK kembali ke daftar', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final client = ApiClient(
+      baseUrl: 'http://test',
+      client: MockClient((request) async {
+        if (request.method == 'GET') {
+          return http.Response('[]', 200);
+        }
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        return http.Response(jsonEncode({...body, 'id': 'abc'}), 201);
+      }),
     );
-    expect(position.controller.text, isEmpty);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider.value(value: client),
+          ChangeNotifierProvider(
+            create: (_) => AuthState(client, initialToken: 'tok'),
+          ),
+        ],
+        child: const MaterialApp(home: ExperienceListScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('addExperienceButton')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ExperienceFormPage), findsOneWidget);
+
+    await tester.enterText(_positionField, 'Backend Intern');
+    await tester.enterText(_companyField, 'PT Contoh');
+    await tester.enterText(_descriptionField, 'Membuat REST API.');
+    await tester.tap(_saveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ExperienceFormPage), findsNothing);
+    expect(find.byType(ExperienceListScreen), findsOneWidget);
   });
 }
