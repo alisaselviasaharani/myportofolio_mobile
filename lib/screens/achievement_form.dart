@@ -204,7 +204,7 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
       }
     }
     final achievement = saved;
-    if (!mounted || achievement == null) return;
+    if (!mounted) return;
     pushNotification(
       context,
       _isEditing ? 'Sertifikasi diperbarui' : 'Sertifikasi ditambahkan',

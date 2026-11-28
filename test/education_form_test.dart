@@ -14,6 +14,14 @@ import 'package:myportofolio_mobile/utils/period_format.dart';
 import 'package:myportofolio_mobile/widgets/ocean_button.dart';
 import 'package:provider/provider.dart';
 
+/// Respons JSON berenkode UTF-8. Tanpa header charset, `http.Response`
+/// memakai Latin-1 sehingga tanda "–" pada periode membuat server palsu error.
+http.Response _jsonResponse(Object body, [int status = 200]) => http.Response(
+  jsonEncode(body),
+  status,
+  headers: const {'content-type': 'application/json; charset=utf-8'},
+);
+
 final _institutionField = find.byKey(const Key('institutionField'));
 final _levelField = find.byKey(const Key('levelField'));
 final _majorField = find.byKey(const Key('majorField'));
@@ -37,10 +45,10 @@ Future<void> _pumpForm(WidgetTester tester, {Education? education}) async {
       requests.add(request);
       expect(request.headers['Authorization'], 'Token tok');
       final body = jsonDecode(request.body) as Map<String, dynamic>;
-      return http.Response(
-        jsonEncode({...body, 'id': 'edu-1'}),
-        request.method == 'POST' ? 201 : 200,
-      );
+      return _jsonResponse({
+        ...body,
+        'id': 'edu-1',
+      }, request.method == 'POST' ? 201 : 200);
     }),
   );
   await tester.pumpWidget(

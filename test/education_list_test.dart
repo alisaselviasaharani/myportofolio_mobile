@@ -13,6 +13,14 @@ import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:provider/provider.dart';
 
+/// Respons JSON berenkode UTF-8. Tanpa header charset, `http.Response`
+/// memakai Latin-1 sehingga tanda "–" pada periode membuat server palsu error.
+http.Response _jsonResponse(Object body, [int status = 200]) => http.Response(
+  jsonEncode(body),
+  status,
+  headers: const {'content-type': 'application/json; charset=utf-8'},
+);
+
 Education _ui() => Education(
   id: 'ui',
   institution: 'Universitas Indonesia',
@@ -52,12 +60,9 @@ Future<void> _pumpList(
     baseUrl: 'http://test',
     client: MockClient(
       handler ??
-          (request) async => http.Response(
-            jsonEncode([
-              for (final e in served) {...e.toJson(), 'id': e.id},
-            ]),
-            200,
-          ),
+          (request) async => _jsonResponse([
+            for (final e in served) {...e.toJson(), 'id': e.id},
+          ]),
     ),
   );
   await tester.pumpWidget(
@@ -166,19 +171,16 @@ void main() {
       tester,
       handler: (request) async {
         expect(request.url.toString(), 'http://test/api/v1/education/');
-        return http.Response(
-          jsonEncode([
-            {
-              'id': 'x1',
-              'institution': 'Universitas Gadjah Mada',
-              'degree': 'S2 - Teknik Informatika',
-              'period': 'Sep 2027 – Sekarang',
-              'logo': '',
-              'website': '',
-            },
-          ]),
-          200,
-        );
+        return _jsonResponse([
+          {
+            'id': 'x1',
+            'institution': 'Universitas Gadjah Mada',
+            'degree': 'S2 - Teknik Informatika',
+            'period': 'Sep 2027 – Sekarang',
+            'logo': '',
+            'website': '',
+          },
+        ]);
       },
     );
 
@@ -197,17 +199,14 @@ void main() {
         calls++;
         return calls == 1
             ? http.Response('error', 500)
-            : http.Response(
-                jsonEncode([
-                  {
-                    'id': 'x1',
-                    'institution': 'SMA Negeri 8 Jakarta',
-                    'degree': 'SMA - IPA',
-                    'period': 'Jul 2020 – Jun 2023',
-                  },
-                ]),
-                200,
-              );
+            : _jsonResponse([
+                {
+                  'id': 'x1',
+                  'institution': 'SMA Negeri 8 Jakarta',
+                  'degree': 'SMA - IPA',
+                  'period': 'Jul 2020 – Jun 2023',
+                },
+              ]);
       },
     );
 
