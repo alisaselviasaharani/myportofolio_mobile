@@ -53,4 +53,30 @@ void main() {
       expect(formatMonthPeriod(start, null), 'Sep 2023');
     });
   });
+
+  ongoingTests();
+}
+
+void ongoingTests() {
+  group('isPeriodOngoing', () {
+    final now = DateTime(2026, 11, 29);
+    test('berakhir Sekarang masih berjalan', () {
+      expect(isPeriodOngoing('Sep 2023 – Sekarang', now: now), isTrue);
+    });
+    test('tanggal akhir di masa depan masih berjalan', () {
+      expect(isPeriodOngoing('Sep 2023 – Jun 2027', now: now), isTrue);
+      expect(isPeriodOngoing('Sep 2023 - Jun 2027', now: now), isTrue);
+    });
+    test('bulan akhir yang sedang berjalan masih dihitung', () {
+      expect(isPeriodOngoing('Sep 2022 – Nov 2026', now: now), isTrue);
+    });
+    test('tanggal akhir yang sudah lewat berarti lulus', () {
+      expect(isPeriodOngoing('Jul 2020 – Jun 2023', now: now), isFalse);
+      expect(isPeriodOngoing('5 Nov 2020 - 10 Des 2021', now: now), isFalse);
+    });
+    test('tanpa tanggal akhir atau format asing berarti tidak berjalan', () {
+      expect(isPeriodOngoing('Sep 2023', now: now), isFalse);
+      expect(isPeriodOngoing('', now: now), isFalse);
+    });
+  });
 }

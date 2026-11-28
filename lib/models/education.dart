@@ -1,3 +1,5 @@
+import 'package:myportofolio_mobile/utils/period_format.dart';
+
 /// Jenjang pendidikan yang bisa dipilih pada form.
 enum DegreeLevel {
   junior('SMP', 'SMP'),
@@ -114,9 +116,9 @@ class Education {
       website: json['website']?.toString() ?? '',
       level: level ?? DegreeLevel.bachelor,
       major: major,
-      // Django tidak menyimpan status; periode yang berakhir "Sekarang"
-      // (format dari form) berarti masih aktif.
-      isCurrent: period.toLowerCase().contains('sekarang'),
+      // Django tidak menyimpan status. Masih aktif jika periode berakhir
+      // "Sekarang" atau tanggal akhirnya (perkiraan lulus) belum lewat.
+      isCurrent: isPeriodOngoing(period),
     );
   }
 

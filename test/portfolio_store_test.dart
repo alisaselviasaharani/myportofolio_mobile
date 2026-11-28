@@ -193,7 +193,9 @@ void main() {
     ]);
 
     expect(store.educations.value.single.description, isEmpty);
-    expect(store.educations.value.single.isCurrent, isFalse);
+    // Django tidak menyimpan status: tanggal lulus (Jun 2027) belum lewat,
+    // jadi tetap berstatus Aktif.
+    expect(store.educations.value.single.isCurrent, isTrue);
   });
 
   test('removeEducation menghapus dari daftar dan favorit lewat id', () {

@@ -21,3 +21,6 @@ const String googleServerClientId = String.fromEnvironment(
   'GOOGLE_SERVER_CLIENT_ID',
   defaultValue: '492898133732-ablinjnv58q1r9stjgoaj3jhld5d87i9.apps.googleusercontent.com',
 );
+
+/// Package name Android; harus sama dengan OAuth client Android di Google Cloud.
+const String androidPackageName = 'com.example.myportofolio_mobile';
