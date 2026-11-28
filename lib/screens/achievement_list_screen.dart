@@ -79,13 +79,18 @@ class _AchievementListScreenState extends State<AchievementListScreen> {
     }
   }
 
-  void _openDetail(Achievement achievement) {
-    Navigator.push(
+  /// Membuka detail; setelah kembali, daftar dimuat ulang agar hasil edit
+  /// atau hapus langsung terlihat.
+  Future<void> _openDetail(Achievement achievement) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AchievementDetailScreen(achievement: achievement),
       ),
     );
+    if (mounted) {
+      await _reload();
+    }
   }
 
   List<Achievement> _apply(List<Achievement> all) {

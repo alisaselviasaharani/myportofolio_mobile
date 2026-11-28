@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/experience.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
+import 'package:myportofolio_mobile/widgets/delete_flow.dart';
 import 'package:myportofolio_mobile/widgets/experience_parts.dart';
 import 'package:myportofolio_mobile/widgets/ocean_background.dart';
 import 'package:myportofolio_mobile/widgets/ocean_bottom_bar.dart';
@@ -13,13 +16,58 @@ import 'package:myportofolio_mobile/widgets/portfolio_list_parts.dart';
 /// Halaman "Detail Pengalaman" bergaya sama dengan Detail Pendidikan: panel
 /// gradasi dengan tombol bagikan, lencana ikon, tabel info (Perusahaan, Tipe,
 /// Periode, Tautan), dan Deskripsi. Baris yang kosong tidak ditampilkan.
-class ExperienceDetailScreen extends StatelessWidget {
+///
+/// Tombol edit membuka [ExperienceFormPage] berisi data ini (hasilnya
+/// langsung tampil di sini); tombol hapus meminta konfirmasi lalu menghapus
+/// data di Django dan menutup halaman.
+class ExperienceDetailScreen extends StatefulWidget {
   const ExperienceDetailScreen({super.key, required this.experience});
 
   final Experience experience;
 
-  void _share(BuildContext context) {
-    final e = experience;
+  @override
+  State<ExperienceDetailScreen> createState() => _ExperienceDetailScreenState();
+}
+
+class _ExperienceDetailScreenState extends State<ExperienceDetailScreen> {
+  late Experience _experience;
+
+  @override
+  void initState() {
+    super.initState();
+    _experience = widget.experience;
+  }
+
+  Future<void> _edit() async {
+    final updated = await Navigator.push<Experience>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExperienceFormPage(experience: _experience),
+      ),
+    );
+    if (updated != null && mounted) {
+      setState(() => _experience = updated);
+    }
+  }
+
+  Future<void> _delete() async {
+    final deleted = await confirmAndDelete(
+      context,
+      title: 'Hapus pengalaman?',
+      message:
+          '"${_experience.position}" di ${_experience.company} akan dihapus '
+          'dari server dan tidak bisa dikembalikan.',
+      successMessage: 'Pengalaman dihapus.',
+      request: (api, token) => api.deleteExperience(_experience, token: token),
+    );
+    if (deleted && mounted) {
+      PortfolioStore.instance.removeExperience();
+      Navigator.pop(context, true);
+    }
+  }
+
+  void _share() {
+    final e = _experience;
     final text = [
       e.position,
       e.company,
@@ -33,7 +81,7 @@ class ExperienceDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top + oceanAppBarHeight;
-    final e = experience;
+    final e = _experience;
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
@@ -72,9 +120,21 @@ class ExperienceDetailScreen extends StatelessWidget {
                         badge: const ExperienceBadge(size: 68),
                         actions: [
                           PortfolioRoundAction(
+                            key: const Key('editButton'),
+                            icon: Icons.edit_outlined,
+                            tooltip: 'Edit pengalaman',
+                            onTap: _edit,
+                          ),
+                          PortfolioRoundAction(
+                            key: const Key('deleteButton'),
+                            icon: Icons.delete_outline,
+                            tooltip: 'Hapus pengalaman',
+                            onTap: _delete,
+                          ),
+                          PortfolioRoundAction(
                             icon: Icons.ios_share,
                             tooltip: 'Bagikan',
-                            onTap: () => _share(context),
+                            onTap: _share,
                           ),
                         ],
                       ),

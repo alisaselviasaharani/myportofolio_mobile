@@ -5,6 +5,7 @@ import 'package:myportofolio_mobile/screens/achievement_list_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
+import 'package:myportofolio_mobile/utils/notify.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
 import 'package:myportofolio_mobile/utils/snackbar.dart';
 import 'package:myportofolio_mobile/utils/validators.dart';
@@ -31,8 +32,21 @@ import 'package:provider/provider.dart';
 /// Setelah dialog ditutup, form ditutup: kembali ke halaman sebelumnya jika
 /// [popOnSuccess] (dipakai daftar agar memuat ulang), atau diganti dengan
 /// [AchievementListScreen] agar hasilnya langsung terlihat.
+///
+/// Jika [achievement] diberikan, form dalam mode edit: isian terisi data itu
+/// (tanggal dibaca dari teks periode), Simpan mengirim PATCH, dan setelah
+/// dialog ditutup halaman kembali dengan [Achievement] yang diperbarui.
+/// Jika periode lama tidak bisa dibaca (misalnya diketik manual di Django),
+/// tanggal dikosongkan dan periode lama dipertahankan kecuali tanggal dipilih.
 class AchievementFormPage extends StatefulWidget {
-  const AchievementFormPage({super.key, this.popOnSuccess = false});
+  const AchievementFormPage({
+    super.key,
+    this.popOnSuccess = false,
+    this.achievement,
+  });
+
+  /// Achievement yang diedit; `null` berarti menambah baru.
+  final Achievement? achievement;
 
   /// `true` jika form dibuka dari daftar dan cukup kembali ke daftar itu.
   final bool popOnSuccess;
@@ -61,6 +75,29 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isSubmitting = false;
+
+  bool get _isEditing => widget.achievement != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final a = widget.achievement;
+    if (a != null) {
+      _titleController.text = a.title;
+      _descriptionController.text = a.description;
+      _imageUrlController.text = a.imageUrl;
+      _category = a.category;
+      final period = parsePeriod(a.period);
+      if (period != null) {
+        _startDate = period.start;
+        _startDateController.text = formatDate(period.start);
+        _endDate = period.end;
+        if (period.end != null) {
+          _endDateController.text = formatDate(period.end!);
+        }
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -116,9 +153,14 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
     final token = auth.token;
     if (token == null) return;
 
+    final original = widget.achievement;
     final newAchievement = Achievement(
+      id: original?.id,
       title: _titleController.text.trim(),
-      period: formatPeriod(_startDate!, _endDate),
+      // Periode lama yang tak bisa dibaca dipertahankan jika tanggal kosong.
+      period: _startDate == null
+          ? original!.period
+          : formatPeriod(_startDate!, _endDate),
       description: _descriptionController.text.trim(),
       category: _category,
       imageUrl: _imageUrlController.text.trim(),
@@ -127,9 +169,13 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
     Achievement? saved;
     setState(() => _isSubmitting = true);
     try {
-      saved = await apiClient.createAchievement(newAchievement, token: token);
+      saved = original == null
+          ? await apiClient.createAchievement(newAchievement, token: token)
+          : await apiClient.updateAchievement(newAchievement, token: token);
       if (!mounted) return;
-      PortfolioStore.instance.addAchievement(saved);
+      if (original == null) {
+        PortfolioStore.instance.addAchievement(saved);
+      }
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.statusCode == 401) {
@@ -157,12 +203,16 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
         setState(() => _isSubmitting = false);
       }
     }
-    // `saved` pasti terisi di sini: kegagalan di atas sudah `return`.
     final achievement = saved;
-    if (!mounted) return;
+    if (!mounted || achievement == null) return;
+    pushNotification(
+      context,
+      _isEditing ? 'Sertifikasi diperbarui' : 'Sertifikasi ditambahkan',
+      achievement.title,
+    );
     showSummaryDialog(
       context,
-      title: 'Certification Saved!',
+      title: _isEditing ? 'Certification Updated!' : 'Certification Saved!',
       items: [
         SummaryItem(
           label: 'Nama Penghargaan',
@@ -190,15 +240,18 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
           icon: Icons.image_outlined,
         ),
       ],
-      onClosed: _finish,
+      onClosed: () => _finish(achievement),
     );
   }
 
-  /// Menutup form setelah dialog sukses: kembali ke daftar yang membukanya,
-  /// atau membuka daftar sertifikasi agar data baru langsung terlihat.
-  void _finish() {
+  /// Menutup form setelah dialog sukses. Mode edit kembali ke halaman detail
+  /// dengan data baru; mode tambah kembali ke daftar yang membukanya, atau
+  /// membuka daftar sertifikasi agar data baru langsung terlihat.
+  void _finish(Achievement saved) {
     if (!mounted) return;
-    if (widget.popOnSuccess) {
+    if (_isEditing) {
+      Navigator.pop(context, saved);
+    } else if (widget.popOnSuccess) {
       Navigator.pop(context, true);
     } else {
       Navigator.pushReplacement(
@@ -212,7 +265,9 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: oceanAppBar(title: 'Add Certification'),
+      appBar: oceanAppBar(
+        title: _isEditing ? 'Edit Certification' : 'Add Certification',
+      ),
       // Drawer yang sama dengan halaman utama.
       drawer: const LeftDrawer(selected: DrawerDestination.certification),
       body: OceanBackground(
@@ -228,10 +283,14 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const FormHeader(
+                    FormHeader(
                       kind: FormKind.certification,
-                      title: 'Add Certification',
-                      subtitle: 'Fill in your certification details below.',
+                      title: _isEditing
+                          ? 'Edit Certification'
+                          : 'Add Certification',
+                      subtitle: _isEditing
+                          ? 'Update your certification details below.'
+                          : 'Fill in your certification details below.',
                     ),
                     FormCard(
                       children: [
@@ -314,10 +373,12 @@ class _AchievementFormPageState extends State<AchievementFormPage> {
                           label: 'Tanggal Mulai',
                           isRequired: true,
                           onTap: () => _pickDate(isStart: true),
-                          validator: (_) => FormValidators.requiredDate(
-                            _startDate,
-                            fieldName: 'Tanggal mulai',
-                          ),
+                          validator: (_) => _isEditing && _startDate == null
+                              ? null
+                              : FormValidators.requiredDate(
+                                  _startDate,
+                                  fieldName: 'Tanggal mulai',
+                                ),
                         ),
                         // === Tanggal Selesai (opsional) ===
                         DateFormField(

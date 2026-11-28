@@ -108,11 +108,16 @@ class _EducationListScreenState extends State<EducationListScreen> {
     }).toList();
   }
 
-  void _openForm() {
-    Navigator.push(
+  Future<void> _openForm() async {
+    await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const EducationFormPage()),
+      MaterialPageRoute(
+        builder: (context) => const EducationFormPage(popOnSuccess: true),
+      ),
     );
+    if (mounted) {
+      await _load();
+    }
   }
 
   void _openDetail(Education education) {

@@ -88,6 +88,14 @@ class AppStrings {
     'loggedOut': 'Berhasil keluar.',
     'comingSoon': 'akan hadir di tahap berikutnya.',
     'close': 'Tutup',
+    'notificationsOn': 'Aktifkan notifikasi',
+    'noNotifications': 'Belum ada notifikasi.\nNotifikasi muncul saat kamu menyimpan data.',
+    'markAllRead': 'Tandai semua dibaca',
+    'clearAll': 'Hapus semua',
+    'justNow': 'Baru saja',
+    'minutesAgo': 'mnt lalu',
+    'hoursAgo': 'jam lalu',
+    'daysAgo': 'hari lalu',
   });
 
   /// Bahasa Inggris.
@@ -118,5 +126,13 @@ class AppStrings {
     'loggedOut': 'Logged out.',
     'comingSoon': 'is coming in a later stage.',
     'close': 'Close',
+    'notificationsOn': 'Enable notifications',
+    'noNotifications': 'No notifications yet.\nThey appear when you save data.',
+    'markAllRead': 'Mark all as read',
+    'clearAll': 'Clear all',
+    'justNow': 'Just now',
+    'minutesAgo': 'min ago',
+    'hoursAgo': 'h ago',
+    'daysAgo': 'd ago',
   });
 }

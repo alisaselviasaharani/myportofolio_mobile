@@ -57,11 +57,11 @@ class _ExperienceListScreenState extends State<ExperienceListScreen> {
 
   Future<void> _reload() async {
     final future = _fetch();
-
+    // Pakai blok `{}` (bukan `=>`): `=>` mengembalikan Future hasil assignment,
+    // dan setState melempar error jika callback-nya mengembalikan Future.
     setState(() {
       _experiencesFuture = future;
     });
-
     try {
       await future;
     } catch (_) {
@@ -81,13 +81,18 @@ class _ExperienceListScreenState extends State<ExperienceListScreen> {
     }
   }
 
-  void _openDetail(Experience experience) {
-    Navigator.push(
+  /// Membuka detail; setelah kembali, daftar dimuat ulang agar hasil edit
+  /// atau hapus langsung terlihat.
+  Future<void> _openDetail(Experience experience) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ExperienceDetailScreen(experience: experience),
       ),
     );
+    if (mounted) {
+      await _reload();
+    }
   }
 
   List<Experience> _apply(List<Experience> all) {

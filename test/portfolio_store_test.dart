@@ -195,4 +195,36 @@ void main() {
     expect(store.educations.value.single.description, isEmpty);
     expect(store.educations.value.single.isCurrent, isFalse);
   });
+
+  test('removeEducation menghapus dari daftar dan favorit lewat id', () {
+    final a = Education(
+      id: 'a',
+      institution: 'UI',
+      degree: 'S1 - Ilmu Komputer',
+      period: 'Sep 2023 – Jun 2027',
+    );
+    final b = Education(
+      id: 'b',
+      institution: 'SMA 8',
+      degree: 'SMA - IPA',
+      period: 'Jul 2020 – Jun 2023',
+    );
+    store
+      ..addEducation(a)
+      ..addEducation(b)
+      ..toggleFavorite(a);
+
+    store.removeEducation(a);
+
+    expect(store.educations.value, [b]);
+    expect(store.favorites.value, isEmpty);
+  });
+
+  test('removeExperience tidak turun di bawah nol', () {
+    store.addExperience();
+    store
+      ..removeExperience()
+      ..removeExperience();
+    expect(store.experienceCount.value, 0);
+  });
 }

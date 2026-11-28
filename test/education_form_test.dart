@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/models/education.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
+import 'package:myportofolio_mobile/screens/education_list_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/utils/period_format.dart';
@@ -36,12 +37,9 @@ Future<void> _pumpForm(WidgetTester tester, {Education? education}) async {
       requests.add(request);
       expect(request.headers['Authorization'], 'Token tok');
       final body = jsonDecode(request.body) as Map<String, dynamic>;
-      // charset UTF-8 eksplisit: periode memuat "–" yang tidak bisa di-encode
-      // sebagai latin1 (bawaan http.Response tanpa header charset).
       return http.Response(
         jsonEncode({...body, 'id': 'edu-1'}),
         request.method == 'POST' ? 201 : 200,
-        headers: const {'content-type': 'application/json; charset=utf-8'},
       );
     }),
   );
@@ -136,7 +134,7 @@ void main() {
     expect(find.byType(Dialog), findsNothing);
   });
 
-  testWidgets('Input valid menampilkan dialog, OK mereset form', (
+  testWidgets('Input valid menampilkan dialog, OK membuka daftar pendidikan', (
     tester,
   ) async {
     await _pumpForm(tester);
@@ -179,15 +177,25 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
+    // Setelah OK, form diganti daftar pendidikan (bukan tetap di form).
     expect(find.byType(Dialog), findsNothing);
-    final institution = tester.widget<EditableText>(
-      find.descendant(
-        of: _institutionField,
-        matching: find.byType(EditableText),
-      ),
-    );
-    expect(institution.controller.text, isEmpty);
-    expect(find.text('Pilih jenjang pendidikan'), findsOneWidget);
+    expect(find.byType(EducationListScreen), findsOneWidget);
+    expect(find.byType(EducationFormPage), findsNothing);
+  });
+
+  testWidgets('Menutup dialog dengan ketuk di luar tetap membuka daftar', (
+    tester,
+  ) async {
+    await _pumpForm(tester);
+    await _fillRequired(tester);
+    await tester.tap(_saveButton);
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsOneWidget);
+
+    await tester.tapAt(const Offset(2, 2));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EducationListScreen), findsOneWidget);
   });
 
   testWidgets('Mode edit mengisi field dan memperbarui data', (tester) async {

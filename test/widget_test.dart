@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_store.dart';
 import 'package:myportofolio_mobile/main.dart';
@@ -239,11 +243,24 @@ void main() {
       expect(find.text('Format email tidak valid!'), findsOneWidget);
     });
 
-    testWidgets('Contact mengirim pesan jika semua isian valid', (
+    testWidgets('Contact mengirim pesan ke backend lalu menampilkan dialog', (
       tester,
     ) async {
       _useTallScreen(tester);
-      await tester.pumpWidget(const MaterialApp(home: ContactPage()));
+      final requests = <http.Request>[];
+      final api = ApiClient(
+        baseUrl: 'http://test',
+        client: MockClient((request) async {
+          requests.add(request);
+          return http.Response('{"detail":"Pesan terkirim."}', 201);
+        }),
+      );
+      await tester.pumpWidget(
+        Provider.value(
+          value: api,
+          child: const MaterialApp(home: ContactPage()),
+        ),
+      );
 
       await tester.enterText(
         find.byKey(const Key('contactNameField')),
@@ -261,7 +278,50 @@ void main() {
       await tester.tap(find.text('Kirim Pesan'));
       await tester.pumpAndSettle();
 
+      expect(requests, hasLength(1));
+      expect(requests.single.url.path, '/api/v1/contact/');
+      expect(jsonDecode(requests.single.body), {
+        'name': 'Alisa',
+        'email': 'alisa@ui.ac.id',
+        'message': 'Halo!',
+      });
       expect(find.text('Message Sent!'), findsOneWidget);
+    });
+
+    testWidgets('Contact gagal kirim: tidak ada dialog sukses, isian tetap', (
+      tester,
+    ) async {
+      _useTallScreen(tester);
+      final api = ApiClient(
+        baseUrl: 'http://test',
+        client: MockClient((request) async => http.Response('{}', 503)),
+      );
+      await tester.pumpWidget(
+        Provider.value(
+          value: api,
+          child: const MaterialApp(home: ContactPage()),
+        ),
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('contactNameField')),
+        'Alisa',
+      );
+      await tester.enterText(
+        find.byKey(const Key('contactEmailField')),
+        'alisa@ui.ac.id',
+      );
+      await tester.enterText(
+        find.byKey(const Key('contactMessageField')),
+        'Halo!',
+      );
+      await tester.ensureVisible(find.text('Kirim Pesan'));
+      await tester.tap(find.text('Kirim Pesan'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Message Sent!'), findsNothing);
+      expect(find.textContaining('belum bisa mengirim email'), findsOneWidget);
+      expect(find.text('Halo!'), findsOneWidget);
     });
   });
 

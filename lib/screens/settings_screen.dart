@@ -1,7 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/config.dart';
 import 'package:myportofolio_mobile/l10n/app_strings.dart';
+import 'package:myportofolio_mobile/screens/account_screen.dart';
 import 'package:myportofolio_mobile/screens/language_screen.dart';
+import 'package:myportofolio_mobile/screens/notification_screen.dart';
 import 'package:myportofolio_mobile/services/app_settings.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/ocean_theme.dart';
@@ -17,9 +19,20 @@ import 'package:provider/provider.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  /// Menampilkan informasi fitur yang belum tersedia.
-  void _comingSoon(BuildContext context, String label, String comingSoon) {
-    showInfoSnackBar(context, '$label $comingSoon');
+  /// Membuka halaman akun dan profil.
+  void _openAccount(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AccountScreen()),
+    );
+  }
+
+  /// Membuka halaman notifikasi.
+  void _openNotifications(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationScreen()),
+    );
   }
 
   /// Membuka halaman pengaturan bahasa.
@@ -170,11 +183,7 @@ class SettingsScreen extends StatelessWidget {
               SettingsTile(
                 icon: Icons.person_outline,
                 title: strings.accountProfile,
-                onTap: () => _comingSoon(
-                  context,
-                  strings.accountProfile,
-                  strings.comingSoon,
-                ),
+                onTap: () => _openAccount(context),
               ),
 
               const SizedBox(height: 8),
@@ -192,11 +201,7 @@ class SettingsScreen extends StatelessWidget {
               SettingsTile(
                 icon: Icons.notifications_none,
                 title: strings.notifications,
-                onTap: () => _comingSoon(
-                  context,
-                  strings.notifications,
-                  strings.comingSoon,
-                ),
+                onTap: () => _openNotifications(context),
               ),
 
               const SizedBox(height: 8),
